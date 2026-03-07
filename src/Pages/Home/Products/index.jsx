@@ -10,7 +10,7 @@ export default function ({ id, title, categoryKey }) {
     targetItems = categoryKey
       ? items.filter((item) => !!item[categoryKey])
       : items,
-    products = targetItems.map(productItem);
+    products = targetItems.reverse().map(productItem);
 
   if (products.length === 0) return null;
 

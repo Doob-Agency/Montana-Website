@@ -8,6 +8,8 @@ import getPage from "../translation";
 import Box from "@mui/material/Box";
 import Skeleton from "@mui/material/Skeleton";
 
+const ordinaryCategories = [1, 2, 3, 4, 5, 6, 7];
+
 const miniCategories = staticCategories.map((i) => i.title),
   getText = getPage("allProducts"),
   emptyStr = "",
@@ -30,7 +32,7 @@ const miniCategories = staticCategories.map((i) => i.title),
 export default function () {
   const urlParams = useParams(),
     urlCat = urlParams.category || emptyStr,
-    { data, categories, customCategoriesExp } = useSelector((e) => e.Products),
+    { data } = useSelector((e) => e.Products),
     [productName, setProductName] = useState(emptyStr),
     [category, setCategory] = useState(urlCat);
 
@@ -40,7 +42,8 @@ export default function () {
   const viewOccassions = params.has("occassions"),
     excludedCategories = data.filter(
       (i) =>
-        params.has("occassions") === customCategoriesExp.test(i.category_name),
+        params.has("occassions") !==
+        ordinaryCategories.includes(i.item_category_id),
     ),
     availCategories = new Set(),
     items = excludedCategories.map((item, index) => {

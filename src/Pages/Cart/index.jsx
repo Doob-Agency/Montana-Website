@@ -548,13 +548,11 @@ function CartCashback({ totalPrice, source }) {
       className="align-items-center container d-flex flex-column gap-3 h5 mt-4 mb-3"
       style={{ cssText: "color: var(--primary); font-weight: 600;" }}
     >
-      {getText(25) +
-        obj.max +
-        getText(26) +
-        obj.value +
-        " " +
-        (obj.type === "percentage" ? "%" : <CurrencySymbol />) +
-        getText(27)}
+      <p>
+        {getText(25) + obj.max + getText(26) + obj.value}
+        {obj.type === "percentage" ? "%" : <CurrencySymbol />}
+        {getText(27)}
+      </p>
       <progress
         value={totalPrice}
         max={+obj.max}

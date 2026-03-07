@@ -38,11 +38,15 @@ function ProductItem({ item, I }) {
   let product,
     quantity = 0;
 
-  const isActive = !!item.is_active && item.stock > 0,
+  const store = S.getState(),
+    settings = store.settings.data,
+    isActive =
+      settings.enstock === "true"
+        ? !!item.is_active & (item.stock > 0)
+        : !!item.is_active,
     priceType = isArabic
       ? priceTypes[item.price_type]
       : item.price_type.replace(/_/g, " ").toUpperCase(),
-    store = S.getState(),
     { fav: favs } = store.Products,
     { loaded } = store.User,
     isHearted = favs.some((e) => e.id === item.id),
@@ -294,7 +298,7 @@ function ProductItem({ item, I }) {
 
 function Facts({ src }) {
   const hasNut = Nutriants.filter((n) => n !== "calories").some(
-    (n) => !!src[n]
+    (n) => !!src[n],
   );
 
   if (!hasNut) return null;

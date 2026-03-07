@@ -309,23 +309,28 @@ function calcTaxes(price, percentage) {
   return (percentage / 100) * price;
 }
 
-function isWithinWorkingHours({ workingHours, is_schedulable }) {
-  if (is_schedulable && workingHours) {
-    const currTime = new Date(),
+function isWithinWorkingHours({ schedule_data, is_schedulable }) {
+  if (is_schedulable) {
+    const currTime = new Date(
+        new Date().toLocaleString("en-SA", { timeZone: "Asia/Riyadh" }),
+      ),
       day = days[currTime.getDay()];
 
-    const targetDay = Object.keys(workingHours).find((d) => day.test(d));
+    const workingHours = JSON.parse(schedule_data),
+      targetDay = Object.keys(workingHours).find((d) => day.test(d));
 
     if (targetDay) {
-      const resData = workingHours[targetDay],
-        time = currTime.getTime(),
-        openingTime = resData.open.split(/\D/),
-        closingTime = resData.close.split(/\D/);
+      const time = currTime.getTime();
 
-      const validStart = currTime.setHours(openingTime[0], openingTime[1]),
-        validEnd = currTime.setHours(closingTime[0], closingTime[1]);
+      return workingHours[targetDay].some((resData) => {
+        const openingTime = resData.open.split(/\D/),
+          closingTime = resData.close.split(/\D/);
 
-      return time === Math.min(Math.max(time, validStart), validEnd);
+        const validStart = currTime.setHours(openingTime[0], openingTime[1]),
+          validEnd = currTime.setHours(closingTime[0], closingTime[1]);
+
+        return time === Math.min(Math.max(time, validStart), validEnd);
+      });
     }
   }
 

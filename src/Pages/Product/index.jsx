@@ -3,11 +3,11 @@ import getPage from "../../translation";
 /* eslint-disable import/no-anonymous-default-export */
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector, useStore } from "react-redux";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import productItem from "../../shared/productItem";
 import Carousel from "../../shared/Carousel";
-import NXT from "../../icons/NXT";
-import Cart from "../../icons/Cart";
+// import NXT from "../../icons/NXT";
+// import Cart from "../../icons/Cart";
 import Minus from "../../icons/Minus";
 import Plus from "../../icons/Plus";
 import { getActiveLang } from "../../translation";
@@ -37,7 +37,7 @@ export default function () {
     isCustom = query.get("isCustom");
 
   const productId = parseInt(id),
-    items = Products.data,
+    items = Products[+isCustom ? "early_booking" : "data"],
     state = items.find((e) => e.id === productId);
 
   if (!state) return null;
@@ -46,7 +46,7 @@ export default function () {
     <>
       <ProductInfo {...state} />
       <Related
-        items={Products.data}
+        items={items}
         exclude={state.id}
         categoryID={state.item_category_id}
       />
@@ -57,15 +57,21 @@ export default function () {
 function ProductInfo(state) {
   let quantity = 0;
 
-  const isAvailable = !!state.is_active && state.stock > 0,
+  const store = useStore().getState(),
+    settings = store.settings.data,
+    isAvailable =
+      settings.enstock === "true"
+        ? !!state.is_active & (state.stock > 0)
+        : !!state.is_active,
     dispatch = useDispatch(),
-    resId = useStore().getState().Restaurant.data.id,
+    resId = store.Restaurant.data.id,
     cartItems = useSelector((e) => e.Products).cart,
     [Alert, setAlert] = useState(false),
     [currCategoryName, setAddonCat] = useState(""),
     [load, update] = useState(false),
     // [quantity, setQuntity] = useState(1),
     selectedAddons = useRef(new Set()).current;
+  debugger;
 
   useEffect(() => {
     Alert &&
@@ -343,7 +349,7 @@ function ProductInfo(state) {
     const addonsFilter = [...selectedAddons].map(
       ({ id, price, name, addon_category_id }) => {
         const addon_category_name = categories.find(
-          (c) => c.id === addon_category_id
+          (c) => c.id === addon_category_id,
         ).name;
 
         return {
@@ -352,7 +358,7 @@ function ProductInfo(state) {
           addon_name: name,
           price: +price,
         };
-      }
+      },
     );
 
     dispatch({
@@ -400,7 +406,7 @@ function AddonItem(ADD, toggleAddon, isAdded) {
 
 function Related({ items, exclude, categoryID }) {
   items = items.filter(
-    (i) => i.item_category_id === categoryID && i.id !== exclude
+    (i) => i.item_category_id === categoryID && i.id !== exclude,
   );
 
   return (
