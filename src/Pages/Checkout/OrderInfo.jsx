@@ -85,7 +85,8 @@ export default function (props) {
         : 0,
     totalBeforeDiscount = subTotal + delivery_charges + taxes;
 
-  totalPrice += delivery_charges + taxes;
+  totalPrice +=
+    delivery_charges + (settings.enpriceincludestax === "true" ? 0 : taxes);
   if (totalPrice === 0) reqBody.method = "COD";
 
   return (
