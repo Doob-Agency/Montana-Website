@@ -312,7 +312,7 @@ function isWithinWorkingHours({ schedule_data, is_schedulable }) {
     const currTime = new Date(
         new Date().toLocaleString("en-SA", { timeZone: "Asia/Riyadh" }),
       ),
-      day = new RegExp(currTime.getDay(), "i");
+      day = days[currTime.getDay()];
 
     const workingHours = JSON.parse(schedule_data),
       targetDay = Object.keys(workingHours).find((d) => day.test(d));
