@@ -1,3 +1,14 @@
+#closest-res,
+#time-warning {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1050;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
 #checkout {
   ul {
     color: var(--midgray);

@@ -224,9 +224,9 @@ function ClosestResPopup({ setDelivery, clues, dispatch, redirect }) {
   return (
     <div
       id="closest-res"
-      popover="manual"
       className="px-5 py-3 text-center"
       style={{
+        display: "none",
         color: "var(--midgray)",
         borderColor: "#c9e2f4",
         borderRadius: "8px",
@@ -248,7 +248,7 @@ function ClosestResPopup({ setDelivery, clues, dispatch, redirect }) {
             maxWidth: "50%",
           }}
           onClick={() => {
-            document.getElementById("closest-res").hidePopover();
+            document.getElementById("closest-res").style.display = "none";
             setDelivery(false);
           }}
         >
@@ -285,7 +285,7 @@ function ClosestResPopup({ setDelivery, clues, dispatch, redirect }) {
                 });
             } else window.modalOptions.open(getText(11));
 
-            document.getElementById("closest-res").hidePopover();
+            document.getElementById("closest-res").style.display = "none";
           }}
         >
           {getText(12)}
@@ -299,8 +299,8 @@ function TimeWarning({ placeOrder }) {
   return (
     <div
       id="time-warning"
-      popover="manual"
       style={{
+        display: "none",
         borderColor: "aliceblue",
         borderRadius: "8px",
       }}
@@ -336,7 +336,7 @@ function TimeWarning({ placeOrder }) {
             color: "#fff",
             maxWidth: "550px",
           }}
-          onClick={() => document.getElementById("time-warning").hidePopover()}
+          onClick={() => document.getElementById("time-warning").style.display = "none"}
         >
           {getText(17)}
         </button>
@@ -352,7 +352,7 @@ function checkResCoverage(currRes, closestRes) {
   // if there's no closest restaurant
   // or if the closest restaurant  is not the same as the current Restaurant
   else if (closestRes === false || closestRes.id !== currRes.id) {
-    document.getElementById("closest-res").showPopover();
+    document.getElementById("closest-res").style.display = "block";
     return false;
   }
 
