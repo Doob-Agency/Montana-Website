@@ -1,0 +1,24 @@
+#services {
+  & > div {
+    & > div {
+      border-radius: 12px;
+      flex: 1 1 648px;
+      background-color: aliceblue;
+      padding: 1rem 1.5rem;
+      gap: calc(var(--bs-gutter-x) * 0.5);
+      grid-template-columns: 2fr 1fr;
+
+      img {
+        max-height: 210px;
+      }
+
+      span {
+        color: var(--black);
+      }
+
+      a {
+        border-bottom: 1px solid;
+      }
+    }
+  }
+}

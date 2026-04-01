@@ -1,0 +1,54 @@
+#book-banner {
+  & > div {
+    background-color: #ebf5ff;
+    color: var(--primary);
+    overflow: hidden;
+    flex-wrap: wrap;
+    gap: 18px;
+    border-radius: 18px;
+
+    & > div {
+      flex-grow: 1;
+
+      & > div {
+        font-size: 1.1rem;
+        font-weight: 400;
+
+        & > p {
+          margin-block: 24px;
+          grid-template-columns: 1fr auto 1fr auto 1fr;
+          gap: 8px 12px;
+
+          & > .timer {
+            font-weight: 600;
+            grid-column-end: span 5;
+            display: inherit;
+            grid-template-columns: inherit;
+            gap: inherit;
+            color: #facc00;
+          }
+        }
+      }
+    }
+
+    & > img {
+      width: 100%;
+      max-width: 400px;
+      max-height: 480px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+#book-products {
+  color: var(--primary);
+  --hover-transition: 150ms ease-in-out;
+  --btn-height: 38px;
+  --translate-val: 100%;
+  --controllers-opacity: 0;
+
+  object {
+    max-height: 24px;
+    cursor: pointer;
+  }
+}

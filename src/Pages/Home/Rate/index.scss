@@ -1,0 +1,35 @@
+#rates {
+  background-color: aliceblue;
+
+  .swiper-wrapper {
+    justify-content: space-between;
+  }
+
+  & > div {
+    & > span {
+      color: var(--primary);
+      margin-bottom: var(--internal-gap);
+    }
+
+    .card {
+      overflow: hidden;
+      border-radius: 16px;
+      border-color: #ffcd00;
+      max-width: 380px;
+      --bs-card-cap-bg: #fff;
+
+      &-header {
+        border: none;
+      }
+
+      &-body {
+        text-align: center;
+      }
+
+      &-footer {
+        text-align: end;
+        border: none;
+      }
+    }
+  }
+}

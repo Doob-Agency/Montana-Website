@@ -1,0 +1,30 @@
+main {
+  --swiper-scrollbar-drag-bg-color: var(--primary);
+
+  & > section {
+    padding-top: var(--section-gap);
+    padding-bottom: var(--section-gap);
+
+    & > h2:first-child {
+      justify-content: space-between;
+      width: 100%;
+      color: var(--primary);
+      margin-bottom: var(--internal-gap);
+
+      & > h3 {
+        font-weight: 700;
+      }
+
+      & > a {
+        color: inherit;
+        border-bottom: 1px solid currentColor;
+
+        & > object {
+          margin-right: 0.4rem;
+          max-width: 19px;
+          max-height: 24px;
+        }
+      }
+    }
+  }
+}
