@@ -1,0 +1,35 @@
+/* background: #bdbdbd;
+    background: #a3d0eb;
+    background: #ffffff;
+    background: #0a4368;
+    background: #fbfbfb;
+    background: #111928;
+    background: #519c66;
+    background: #d9d9d9;
+    background: #e2f4ff;
+    background: #ebf5ff;
+    background: #ededed;
+    background: #f8f8f8;
+    background: #bdbdbd;
+    background: #191817; */
+
+html,
+body {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+#MF3dsModal.modal {
+  display: flex !important;
+}
+
+#MF3dsModal.modal > * {
+  margin: auto !important;
+}
+
+#MF3dsModal.modal > .modal-content {
+    width: 95% !important;
+  height: 90% !important;
+  max-width: 750px;
+  z-index: 999;
+}
