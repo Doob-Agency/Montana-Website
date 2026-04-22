@@ -71,6 +71,149 @@
       }
     }
 
+    .payment-methods {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+
+      &__title {
+        display: block;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 4px;
+      }
+    }
+
+    .payment-method-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 2px solid #e8e8e8;
+      border-radius: 14px;
+      cursor: pointer;
+      background: #fff;
+      width: 100%;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      direction: rtl;
+
+      &:hover {
+        border-color: var(--primary);
+        background: #f7fbff;
+      }
+
+      &.selected {
+        border-color: var(--primary);
+        background: #eef6fd;
+        box-shadow: 0 2px 10px #0066cc18;
+      }
+
+      &__radio {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: border-color 0.2s;
+
+        .selected & {
+          border-color: var(--primary);
+        }
+      }
+
+      &__dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary);
+        display: block;
+      }
+
+      &__body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-width: 0;
+      }
+
+      &__name {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #222;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .selected & { color: var(--primary); }
+      }
+
+      &__test-badge {
+        font-size: 9px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+        letter-spacing: 0.5px;
+      }
+
+      &__tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+
+        span {
+          font-size: 10px;
+          padding: 2px 7px;
+          border-radius: 20px;
+          background: #f0f0f0;
+          color: #666;
+          font-weight: 500;
+
+          .selected & {
+            background: #d8ecfa;
+            color: var(--primary);
+          }
+        }
+      }
+
+      &__logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 800;
+        flex-shrink: 0;
+        letter-spacing: 0.5px;
+      }
+
+      .mf-logo {
+        background: #1a4f8a;
+        color: #fff;
+      }
+
+      .ms-logo {
+        background: #00a86b;
+        color: #fff;
+      }
+
+      .cod-logo {
+        background: #f5f5f5;
+        font-size: 20px;
+      }
+    }
+
     label {
       font-size: smaller;
       font-weight: 600;

@@ -26,7 +26,12 @@ export default function () {
     dispatch = useDispatch(),
     [err, setErr] = useState(""),
     deliveryState = useState(true),
-    payment = useState("myfatoorah"),
+    payment = useState(() => {
+      const g = store.settings.gateways;
+      if (g.myfatoorah) return "myfatoorah";
+      if (g.moyasar) return "moyasar";
+      return "COD";
+    }),
     resIdState = useState(null);
 
   const currRes = store.Restaurant.data,
@@ -121,6 +126,11 @@ export default function () {
 
   function placeOrder(ignoreWorkingHours) {
     const requestSent = clues.requestSent;
+    const g = store.settings.gateways;
+    const activeMethod = payment[0];
+
+    if (activeMethod === "myfatoorah" && !g.myfatoorah) return setErr("طريقة الدفع المختارة غير متاحة");
+    if (activeMethod === "moyasar" && !g.moyasar) return setErr("طريقة الدفع المختارة غير متاحة");
 
     if (requestSent) return;
     else if (deliveryState[0] && !checkResCoverage(currRes, clues.closestRes))
@@ -165,6 +175,7 @@ export default function () {
 
   function handleInvoice(res) {
     clues.requestSent = false;
+    console.log("[handleInvoice] backend response:", JSON.stringify(res?.data));
     if (res.success === false) return setErr(getText(4));
 
     updateUserInfo();
@@ -179,7 +190,11 @@ export default function () {
         deliveryAddress: currRes.name,
         deliveryCharges: deliveryState[0] ? currRes.delivery_charges : 0,
         restaurant_charge: currRes.restaurant_charges,
-        paymentMode: paymentMode === "COD" ? getText(6) : paymentMode,
+        paymentMode:
+        paymentMode === "COD" ? getText(6) :
+        paymentMode === "moyasar" ? "Moyasar" :
+        paymentMode === "myfatoorah" ? "MyFatoorah" :
+        paymentMode,
       };
 
     if (deliveryState[0]) {
@@ -190,7 +205,7 @@ export default function () {
 
     if (
       paymentMode === "COD" ||
-      (paymentMode === "myfatoorah") & (res.data.total === 0)
+      ((paymentMode === "myfatoorah" || paymentMode === "moyasar") && res.data.total === 0)
     ) {
       const { data } = res,
         invoiceState = {
@@ -211,9 +226,28 @@ export default function () {
     }
 
     try {
-      initMyFatoorah(res.data.sessionId, res.data.order_id);
+      if (paymentMode === "moyasar") {
+        const { data } = res;
+        const invoiceState = {
+          ...basicOrderData,
+          tax: data.tax,
+          restaurant_name: data.restaurant?.name,
+          date: data.created_at?.split(" "),
+          comment: data.order_comment,
+          code: data.unique_order_id,
+          PIN: data.delivery_pin,
+          tax_amount: data.tax_amount,
+          total: data.total,
+          price: data.payable,
+          subTotal: data.sub_total,
+        };
+        sessionStorage.setItem("moyasarInvoice", JSON.stringify(invoiceState));
+        initMoyasar(data.order_id || data.id, data.total);
+      } else {
+        initMyFatoorah(res.data.sessionId, res.data.order_id);
+      }
     } catch (e) {
-      debugger;
+      setErr(getText(4));
     }
 
     // return (window.location.href = res.data.link);
@@ -385,13 +419,12 @@ Object.assign(complimentaryData, {
 export function initMyFatoorah(sessionId, orderId) {
   window.location.href =
     "/payment?sessionId=" + sessionId + "&orderId=" + orderId;
+}
 
-  // paymentForm.src =
-  // "/checkoutForm.html?sessionId=" + sessionId + "&orderId=" + orderId;
-
-  // sessionContainer.appendChild(paymentForm);
-  // document.documentElement.style.overflowY = "hidden";
-  // sessionContainer.classList.remove("d-none");
+export function initMoyasar(orderId, amount) {
+  const token = "MSR-" + Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+  sessionStorage.setItem(token, JSON.stringify({ orderId, amount }));
+  window.location.href = "/payment?sessionId=" + token + "&orderId=" + orderId;
 }
 
 Object.assign(paymentForm.style, {

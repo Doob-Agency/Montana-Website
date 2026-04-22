@@ -83,6 +83,12 @@ fetch(baseUrl + "/get-settings", {
     APP_STATE.dispatch({ type: "settings/init", payload: r });
   });
 
+fetch(baseUrl + "/getPaymentGateways")
+  .then((r) => r.json())
+  .then((r) => {
+    APP_STATE.dispatch({ type: "settings/initGateways", payload: r });
+  });
+
 fetch(baseUrl + "/get-all-restaurant", fetchOpts)
   .then((res) => res.json())
   .then((data) =>

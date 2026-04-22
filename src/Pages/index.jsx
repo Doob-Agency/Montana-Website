@@ -217,10 +217,11 @@ function SearchBar({ currRoute }) {
 
     if (targetProductsContainer.length && productId) {
       const targetProduct = targetProductsContainer.find(
-          (e) => +e.id === +productId,
-        ),
-        productName = isArabic ? targetProduct.name_ar : targetProduct.name;
-      breadcrumbData += " / " + productName;
+        (e) => +e.id === +productId,
+      );
+      if (targetProduct) {
+        breadcrumbData += " / " + (isArabic ? targetProduct.name_ar : targetProduct.name);
+      }
     }
   }
 

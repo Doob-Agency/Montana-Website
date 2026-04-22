@@ -25,6 +25,7 @@ export default function (props) {
 
   const store = useStore().getState(),
     settings = store.settings.data,
+    gateways = store.settings.gateways,
     currRes = store.Restaurant.data,
     freeDeliverySubtotal = currRes.free_delivery_subtotal,
     wallet_balance = store.User.data.wallet_balance,
@@ -183,39 +184,69 @@ export default function (props) {
         </span>
       </div>
 
-      {/* {totalPrice > 0 && ( */}
-      <form style={{ color: "var(--black)" }}>
-        <span
-          className="d-block h5 text-center"
-          style={{ color: "var(--primary)" }}
-        >
-          {getText(28)}
-        </span>
+      <div className="payment-methods">
+        <span className="payment-methods__title">{getText(28)}</span>
 
-        <label className="d-flex gap-2 mb-3">
-          <input
-            type="radio"
-            name="payment"
-            onChange={() => setPaymentMethod("myfatoorah")}
-            checked={paymentMethod === "myfatoorah"}
-          />
-          {getText(29)}
-        </label>
+        {gateways.myfatoorah && (
+          <div
+            className={"payment-method-item" + (paymentMethod === "myfatoorah" ? " selected" : "")}
+            onClick={() => setPaymentMethod("myfatoorah")}
+          >
+            <span className="payment-method-item__radio">
+              {paymentMethod === "myfatoorah" && <span className="payment-method-item__dot" />}
+            </span>
+            <div className="payment-method-item__body">
+              <span className="payment-method-item__name">
+                MyFatoorah
+                {settings.myFatooraMode === "test" && <span className="payment-method-item__test-badge">TEST</span>}
+              </span>
+              <div className="payment-method-item__tags">
+                <span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>STC Pay</span>
+              </div>
+            </div>
+            <span className="payment-method-item__logo mf-logo">MF</span>
+          </div>
+        )}
 
-        {isExceptionalCart ||
-          (settings[deliveryTargetOption] === "true" && (
-            <label className="d-flex gap-2">
-              <input
-                type="radio"
-                name="payment"
-                onChange={() => setPaymentMethod("COD")}
-                checked={paymentMethod === "COD"}
-              />
-              {getText(30)}
-            </label>
-          ))}
-      </form>
-      {/* )} */}
+        {gateways.moyasar && (
+          <div
+            className={"payment-method-item" + (paymentMethod === "moyasar" ? " selected" : "")}
+            onClick={() => setPaymentMethod("moyasar")}
+          >
+            <span className="payment-method-item__radio">
+              {paymentMethod === "moyasar" && <span className="payment-method-item__dot" />}
+            </span>
+            <div className="payment-method-item__body">
+              <span className="payment-method-item__name">
+                Moyasar
+                {settings.moyasarMode === "test" && <span className="payment-method-item__test-badge">TEST</span>}
+              </span>
+              <div className="payment-method-item__tags">
+                <span>Visa</span><span>Mada</span><span>Apple Pay</span><span>STC Pay</span>
+              </div>
+            </div>
+            <span className="payment-method-item__logo ms-logo">MS</span>
+          </div>
+        )}
+
+        {gateways.COD && (isExceptionalCart || settings[deliveryTargetOption] === "true") && (
+          <div
+            className={"payment-method-item" + (paymentMethod === "COD" ? " selected" : "")}
+            onClick={() => setPaymentMethod("COD")}
+          >
+            <span className="payment-method-item__radio">
+              {paymentMethod === "COD" && <span className="payment-method-item__dot" />}
+            </span>
+            <div className="payment-method-item__body">
+              <span className="payment-method-item__name">{getText(30)}</span>
+              <div className="payment-method-item__tags">
+                <span>الدفع عند الاستلام</span>
+              </div>
+            </div>
+            <span className="payment-method-item__logo cod-logo">💵</span>
+          </div>
+        )}
+      </div>
 
       {(!delivery || userAddresses.length > 0) && (
         <>

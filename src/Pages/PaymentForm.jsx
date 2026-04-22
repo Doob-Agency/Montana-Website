@@ -1,59 +1,126 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useStore } from "react-redux";
 
 export default function () {
-  const initiated = useRef({});
+  const initiated = useRef(false);
+  const store = useStore();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    initiated.current === true || initPaymentForm();
+    if (initiated.current) return;
     initiated.current = true;
+
+    const reqURL = new URLSearchParams(window.location.search);
+    const sessionId = reqURL.get("sessionId");
+    const isMoyasar = sessionId && sessionId.startsWith("MSR-");
+
+    if (isMoyasar) {
+      loadMoyasarSDK()
+        .then(() => initMoyasarForm(reqURL, store.getState().settings.data))
+        .catch((err) => {
+          console.error("[Moyasar]", err);
+          setError("فشل تحميل بوابة الدفع، يرجى المحاولة مرة أخرى.");
+        });
+    } else {
+      try {
+        initMyFatoorahForm(reqURL);
+      } catch (err) {
+        console.error("[MyFatoorah]", err);
+        setError("فشل تحميل بوابة الدفع، يرجى المحاولة مرة أخرى.");
+      }
+    }
   }, []);
+
+  if (error) {
+    return (
+      <section className="container text-center py-5" style={{ maxWidth: "750px" }}>
+        <p className="text-danger fw-bold">{error}</p>
+        <button className="btn mt-2" style={{ background: "var(--primary)", color: "#fff", borderRadius: 24 }}
+          onClick={() => window.history.back()}>
+          العودة
+        </button>
+      </section>
+    );
+  }
+
   return (
     <section className="container" style={{ maxWidth: "750px" }}>
       <div id="embedded-sessions"></div>
+      <div className="mysr-form"></div>
     </section>
   );
 }
 
-const config = {
-  // Add the "SessionId" you received from POST Session Endpoint.
-  // sessionId: "KWT-68814db6-7510-4005-ada9-408aae9f373c",
+function loadMoyasarSDK() {
+  if (window.Moyasar) return Promise.resolve();
 
-  // MyFatoorah triggers this callback after the customer completes payment, either by submitting card details, finishing Google Pay / Apple Pay / STC Pay, or choosing any hosted payment method.
-  // callback: payment,
+  return new Promise((resolve, reject) => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.moyasar.com/mpf/1.9.0/moyasar.css";
+    document.head.appendChild(link);
 
-  //Enter the div id you created in previous step.
-  containerId: "embedded-sessions",
+    const script = document.createElement("script");
+    script.src = "https://cdn.moyasar.com/mpf/1.9.0/moyasar.js";
+    script.onload = () => {
+      if (!window.Moyasar) {
+        reject(new Error("Moyasar SDK loaded but window.Moyasar is undefined"));
+        return;
+      }
+      resolve();
+    };
+    script.onerror = () => reject(new Error("Failed to load Moyasar SDK from CDN"));
+    document.body.appendChild(script);
+  });
+}
 
-  // Default true
-  shouldHandlePaymentUrl: true,
-};
-
-function initPaymentForm() {
-  const reqURL = new URLSearchParams(window.location.search);
-
+function initMyFatoorahForm(reqURL) {
   window.myfatoorah.init({
-    ...config,
+    containerId: "embedded-sessions",
+    shouldHandlePaymentUrl: true,
     sessionId: reqURL.get("sessionId"),
     callback(res) {
       if (res.isSuccess) {
-        window.location.href = `/invoice/${reqURL.get("orderId")}?paymentId=${extractPaymentId(res)}&sessionId=${reqURL.get("sessionId")}`;
-        // window.parent.postMessage(
-        //   {
-        //     type: "Payment Confirm",
-        //     payload: {
-        //       orderId: reqURL.get("orderId"),
-        //       sessionId: reqURL.get("sessionId"),
-        //       paymentId: extractPaymentId(res),
-        //     },
-        //   },
-        //   window.location.origin,
-        // );
+        const paymentId = new URL(res.redirectionUrl).searchParams.get("paymentId");
+        window.location.href =
+          `/invoice/${reqURL.get("orderId")}?paymentId=${paymentId}&sessionId=${reqURL.get("sessionId")}`;
       }
     },
   });
 }
 
-function extractPaymentId(res) {
-  const url = new URL(res.redirectionUrl);
-  return url.searchParams.get("paymentId");
+function initMoyasarForm(reqURL, settings) {
+  const token = reqURL.get("sessionId");
+  const stored = JSON.parse(sessionStorage.getItem(token) || "{}");
+  sessionStorage.removeItem(token);
+  const orderId = stored.orderId;
+  const amount = parseFloat(stored.amount) || 0;
+
+  const applePayValidateUrl =
+    settings?.moyasarApplePayValidateUrl ||
+    process.env.REACT_APP_MOYASAR_APPLEPAY_VALIDATE_URL;
+
+  const config = {
+    element: ".mysr-form",
+    amount: Math.round(amount * 100),
+    currency: "SAR",
+    description: `Order #${orderId}`,
+    publishable_api_key:
+      settings?.moyasarPublishableKey ||
+      process.env.REACT_APP_MOYASAR_PUBLISHABLE_KEY ||
+      "",
+    callback_url: `${window.location.origin}/invoice/${orderId}?gateway=moyasar`,
+    methods: applePayValidateUrl ? ["creditcard", "applepay"] : ["creditcard"],
+  };
+
+  if (applePayValidateUrl) {
+    config.apple_pay = {
+      country: settings?.moyasarApplePayCountry || process.env.REACT_APP_MOYASAR_APPLEPAY_COUNTRY || "SA",
+      label: settings?.siteName || "Montana",
+      validate_merchant_url: applePayValidateUrl,
+    };
+  }
+
+  console.log("[Moyasar] init config:", config);
+  window.Moyasar.init(config);
 }

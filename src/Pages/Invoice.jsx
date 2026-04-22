@@ -20,10 +20,17 @@ export default () => {
   useEffect(
     function () {
       if (state === null) {
-        // const data = getOrderData(+(orderId || params.id), prevOrders);
-        // setState(data);
-        if (params.id) instantPaymentInvoice();
-        else if (orderId) {
+        const gateway = query.get("gateway");
+        if (gateway === "moyasar") {
+          const saved = sessionStorage.getItem("moyasarInvoice");
+          if (saved) {
+            setState(JSON.parse(saved));
+            sessionStorage.removeItem("moyasarInvoice");
+          }
+          instantPaymentInvoice();
+        } else if (params.id) {
+          instantPaymentInvoice();
+        } else if (orderId) {
           const data = getOrderData(+orderId, prevOrders);
           setState(data);
         }
@@ -211,18 +218,29 @@ export default () => {
   }
 
   function instantPaymentInvoice() {
+    const gateway = query.get("gateway") || "myfatoorah";
+    const body =
+      gateway === "moyasar"
+        ? {
+            gateway: "moyasar",
+            order_id: params.id,
+            id: query.get("id"),
+            status: query.get("status"),
+          }
+        : {
+            isSuccess: true,
+            order_id: params.id,
+            sessionId: query.get("sessionId"),
+            paymentId: query.get("paymentId"),
+          };
+
     fetch(process.env.REACT_APP_API_URL + "/public/api/payment-callback", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: window.localStorage.getItem("token"),
       },
-      body: JSON.stringify({
-        isSuccess: true,
-        order_id: params.id,
-        sessionId: query.get("sessionId"),
-        paymentId: query.get("paymentId"),
-      }),
+      body: JSON.stringify(body),
     })
       .then((r) => r.json())
       .then((res) => {
@@ -271,8 +289,12 @@ function getOrderData(orderId, prevOrders) {
     : orderData.restaurant.name;
   result.deliveryCharges = orderData.delivery_charge;
   result.restaurant_charge = orderData.restaurant_charge;
+  const pm = orderData.payment_mode;
   result.paymentMode =
-    orderData.payment_mode === "COD" ? "عند الاستلام" : "مدفوع";
+    pm === "COD" ? "عند الاستلام" :
+    (pm === "myfatoorah" || pm === "Paid" || pm === "paid") ? "MyFatoorah" :
+    (pm === "moyasar" || pm === "admin.moyasar" || pm === "Moyasar") ? "Moyasar" :
+    pm || "مدفوع";
 
   result.comment = orderData.order_comment;
   result.PIN = orderData.delivery_pin;
