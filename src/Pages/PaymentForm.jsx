@@ -100,15 +100,17 @@ function initMoyasarForm(reqURL, settings) {
     settings?.moyasarApplePayValidateUrl ||
     process.env.REACT_APP_MOYASAR_APPLEPAY_VALIDATE_URL;
 
+  const backendKey = settings?.moyasarPublishableKey;
+  const envKey = process.env.REACT_APP_MOYASAR_PUBLISHABLE_KEY;
+  const publishableKey = backendKey || envKey || "";
+  const keySource = backendKey ? "backend" : envKey ? ".env fallback" : "NONE";
+
   const config = {
     element: ".mysr-form",
     amount: Math.round(amount * 100),
     currency: "SAR",
     description: `Order #${orderId}`,
-    publishable_api_key:
-      settings?.moyasarPublishableKey ||
-      process.env.REACT_APP_MOYASAR_PUBLISHABLE_KEY ||
-      "",
+    publishable_api_key: publishableKey,
     callback_url: `${window.location.origin}/invoice/${orderId}?gateway=moyasar`,
     methods: applePayValidateUrl ? ["creditcard", "applepay"] : ["creditcard"],
   };
@@ -121,6 +123,11 @@ function initMoyasarForm(reqURL, settings) {
     };
   }
 
+  console.log(
+    "[Moyasar] key source:", keySource,
+    "| prefix:", publishableKey.slice(0, 8),
+    "| mode:", publishableKey.startsWith("pk_live_") ? "LIVE" : publishableKey.startsWith("pk_test_") ? "TEST" : "INVALID"
+  );
   console.log("[Moyasar] init config:", config);
   window.Moyasar.init(config);
 }
