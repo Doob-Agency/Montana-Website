@@ -96,9 +96,12 @@ function initMoyasarForm(reqURL, settings) {
   const orderId = stored.orderId;
   const amount = parseFloat(stored.amount) || 0;
 
+  // Apple Pay - Domains flow: Moyasar handles merchant validation via their hosted endpoint
+  // (domain must be registered in Moyasar dashboard → Settings → Apple Pay - Domains).
   const applePayValidateUrl =
     settings?.moyasarApplePayValidateUrl ||
-    process.env.REACT_APP_MOYASAR_APPLEPAY_VALIDATE_URL;
+    process.env.REACT_APP_MOYASAR_APPLEPAY_VALIDATE_URL ||
+    "https://api.moyasar.com/v1/applepay/initiate";
 
   const backendKey = settings?.moyasarPublishableKey;
   const envKey = process.env.REACT_APP_MOYASAR_PUBLISHABLE_KEY;
@@ -112,16 +115,13 @@ function initMoyasarForm(reqURL, settings) {
     description: `Order #${orderId}`,
     publishable_api_key: publishableKey,
     callback_url: `${window.location.origin}/invoice/${orderId}?gateway=moyasar`,
-    methods: applePayValidateUrl ? ["creditcard", "applepay"] : ["creditcard"],
-  };
-
-  if (applePayValidateUrl) {
-    config.apple_pay = {
+    methods: ["creditcard", "applepay"],
+    apple_pay: {
       country: settings?.moyasarApplePayCountry || process.env.REACT_APP_MOYASAR_APPLEPAY_COUNTRY || "SA",
       label: settings?.siteName || "Montana",
       validate_merchant_url: applePayValidateUrl,
-    };
-  }
+    },
+  };
 
   console.log(
     "[Moyasar] key source:", keySource,
