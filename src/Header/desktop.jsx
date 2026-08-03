@@ -4,6 +4,7 @@ import { keys } from "../translation";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../store";
+import { useFeature } from "../store/features";
 import { useEffect, useRef } from "react";
 
 const getText = getPage("header");
@@ -13,7 +14,8 @@ export default function () {
     redirect = useNavigate(),
     { alerts: Alerts, loaded } = useSelector((e) => e.User),
     alerts = Alerts.filter((e) => !e.is_read),
-    Products = useSelector((e) => e.Products);
+    Products = useSelector((e) => e.Products),
+    jobsEnabled = useFeature("jobs");
 
   let itemsQuantity = 0;
 
@@ -29,9 +31,11 @@ export default function () {
   return (
     <div className="align-items-center container d-grid py-2">
       <ul className="align-items-center d-flex list-unstyled m-0 p-0">
-        <li>
-          <Link to="/jobs">{getText(2)}</Link>
-        </li>
+        {jobsEnabled && (
+          <li>
+            <Link to="/jobs">{getText(2)}</Link>
+          </li>
+        )}
         <li>
           <Link to="/restaurant">{getText(1)}</Link>
         </li>

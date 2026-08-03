@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, NavLink } from "react-router-dom";
 import getPage, { keys, getActiveLang } from "../translation";
+import { useFeature } from "../store/features";
 import Globe from "../icons/Globe";
 
 const getText = getPage("header");
@@ -40,7 +41,8 @@ export default function MobileHeader() {
 }
 
 function SideMenu() {
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState(false),
+    jobsEnabled = useFeature("jobs");
 
   return (
     <>
@@ -96,11 +98,13 @@ function SideMenu() {
                 {getText(1)}
               </NavLink>
             </li>
-            <li className="d-flex">
-              <NavLink className="px-3 py-2" to="/jobs">
-                {getText(2)}
-              </NavLink>
-            </li>
+            {jobsEnabled && (
+              <li className="d-flex">
+                <NavLink className="px-3 py-2" to="/jobs">
+                  {getText(2)}
+                </NavLink>
+              </li>
+            )}
             <li className="d-flex">
               <NavLink className="px-3 py-2" to="/all-products">
                 {getText(6)}

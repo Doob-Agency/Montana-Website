@@ -34,6 +34,7 @@ import Header from "../Header";
 import Nav from "../Nav";
 import Footer from "../Footer.jsx";
 import Jobs from "./Jobs.jsx";
+import { useFeature } from "../store/features";
 import NotFound from "./NotFound.jsx";
 import PrivacyPolicy from "./PrivacyPolicy.jsx";
 import DownloadForm from "../Header/DownloadForm.jsx";
@@ -114,6 +115,7 @@ export default (
 function App() {
   const storeDefined = window.localStorage.getItem("slug");
   const appSettings = useSelector((e) => e.settings);
+  const jobsEnabled = useFeature("jobs");
   const [titlesLoaded, setTitlesLoaded] = useState(false),
     location = useLocation(),
     showPopup = !storeDefined && location.pathname !== "/restaurant";
@@ -153,7 +155,7 @@ function App() {
       <Routes>
         <Route path="/" caseSensitive={true} Component={HomePage} />
         <Route path="/payment" Component={PaymentForm} />
-        <Route path="/jobs/:jobId?" Component={Jobs} />
+        {jobsEnabled && <Route path="/jobs/:jobId?" Component={Jobs} />}
         <Route path="/faq" Component={FAQs} />
         <Route path="/restaurant" Component={Restaurant} caseSensitive={true} />
         <Route path="/about-us" Component={About} caseSensitive={true} />
