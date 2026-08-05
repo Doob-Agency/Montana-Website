@@ -81,7 +81,13 @@ export default function (props) {
   discountAmount &&
     (clues.discount += Math.min(subTotal, Math.abs(discountAmount)));
 
-  clues.discount += wallet_balance;
+  // The wallet only ever covers what is left to pay — the backend deducts
+  // min(balance, total). Adding the whole balance showed the customer their
+  // entire balance as though it were a discount on this order.
+  clues.discount += Math.min(
+    wallet_balance,
+    Math.max(0, subTotal - clues.discount),
+  );
 
   const deliveryTargetOption = delivery ? "enCODonDelivery" : "enCODonSF";
   totalPrice = Math.max(0, totalPrice - clues.discount);

@@ -200,6 +200,10 @@ export default function () {
       const { data } = res,
         invoiceState = {
           ...basicOrderData,
+          // What the server actually applied, not what checkout estimated. The
+          // estimate added the customer's whole wallet balance, so a 94.95
+          // balance printed as a 94.95 discount on a 26.00 order.
+          discount: (+data.coupon_amount || 0) + (+data.pay_from_wallet || 0),
           tax: data.tax,
           restaurant_name: res.data.restaurant.name,
           date: data.created_at.split(" "),
