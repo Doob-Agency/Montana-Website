@@ -9,6 +9,22 @@ function isArabic() {
   return window.localStorage.getItem("lang") === "العربية";
 }
 
+// The invoice used to print whatever the method key happened to be — an order
+// the wallet covered in full showed "moyasar", a gateway it never reached.
+export function paymentLabel(order) {
+  const key = String((order && order.payment_mode) || "").toLowerCase();
+
+  if (
+    key === "wallet" ||
+    (order && +order.pay_from_wallet > 0 && +order.total <= 0)
+  )
+    return isArabic() ? "مدفوع من المحفظة" : "Paid from wallet";
+
+  if (key === "cod") return isArabic() ? "عند الاستلام" : "Cash on delivery";
+
+  return isArabic() ? "مدفوع" : "Paid";
+}
+
 const getText = getPage("invoice");
 
 export default () => {
@@ -349,8 +365,7 @@ function buildInvoiceOrThrow(orderData) {
     : orderData.restaurant.name;
   result.deliveryCharges = orderData.delivery_charge;
   result.restaurant_charge = orderData.restaurant_charge;
-  result.paymentMode =
-    orderData.payment_mode === "COD" ? "عند الاستلام" : "مدفوع";
+  result.paymentMode = paymentLabel(orderData);
 
   result.comment = orderData.order_comment;
   result.PIN = orderData.delivery_pin;

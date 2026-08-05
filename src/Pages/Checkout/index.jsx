@@ -7,6 +7,7 @@ import getPage, { observeLang } from "../../translation";
 import NXT from "../../icons/NXT";
 import OrderOptions from "./OrderOptions";
 import OrderInfo from "./OrderInfo";
+import { paymentLabel } from "../Invoice.jsx";
 import "./index.scss";
 
 const sessionContainer = document.getElementById("session-container"),
@@ -184,7 +185,7 @@ export default function () {
         deliveryAddress: currRes.name,
         deliveryCharges: deliveryState[0] ? currRes.delivery_charges : 0,
         restaurant_charge: currRes.restaurant_charges,
-        paymentMode: paymentMode === "COD" ? getText(6) : paymentMode,
+        // filled in from the saved order below, once it is known
       };
 
     if (deliveryState[0]) {
@@ -204,6 +205,7 @@ export default function () {
           // estimate added the customer's whole wallet balance, so a 94.95
           // balance printed as a 94.95 discount on a 26.00 order.
           discount: (+data.coupon_amount || 0) + (+data.pay_from_wallet || 0),
+          paymentMode: paymentLabel(data),
           tax: data.tax,
           restaurant_name: res.data.restaurant.name,
           date: data.created_at.split(" "),
