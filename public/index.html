@@ -141,13 +141,11 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-    <!-- MyFatoorah embedded payment. This host MUST match the environment the
-         backend creates the session on. myFatooraMode is "live" and the API base
-         is api-sa.myfatoorah.com, so the script has to be the live KSA one — the
-         demo script cannot find a live SessionId and renders "Sorry something
-         went wrong! Please contact system administrator." instead of the card
-         form. Switch back to demo.myfatoorah.com only alongside test mode. -->
-    <script src="https://sa.myfatoorah.com/sessions/v1/session.js"></script>
+    <!-- The MyFatoorah embedded-payment script is NOT loaded here on purpose.
+         Its host differs per environment and a session created on one is invisible
+         to the other, so a fixed tag here goes stale the moment myFatooraMode is
+         switched in the dashboard. src/Pages/PaymentForm.jsx loads the host that
+         matches the current mode. -->
 
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"
