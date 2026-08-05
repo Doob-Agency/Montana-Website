@@ -17,10 +17,17 @@ const Store = {
   },
   reducers = (Store.reducers = {});
 
+// The endpoint returns every gateway with its flag, not only the enabled ones,
+// so the flag has to be honoured here — otherwise checkout offers all twelve.
+// The flag arrives as 1/0 from MySQL, but tolerate "1"/true too.
+function enabled(flag) {
+  return flag === 1 || flag === "1" || flag === true;
+}
+
 reducers.init = function (state, action) {
   state.loaded = true;
   state.list = Array.isArray(action.payload)
-    ? action.payload.filter((g) => g && g.name)
+    ? action.payload.filter((g) => g && g.name && enabled(g.is_active))
     : [];
 };
 
