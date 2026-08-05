@@ -79,14 +79,17 @@ export default function (props) {
   const deliveryTargetOption = delivery ? "enCODonDelivery" : "enCODonSF";
   totalPrice = Math.max(0, totalPrice - clues.discount);
 
-  const taxes =
+  const taxIncluded = settings.enpriceincludestax === "true",
+    taxes =
       settings.taxApplicable === "true"
-        ? calcTaxes(totalPrice, +settings.taxPercentage)
+        ? calcTaxes(totalPrice, +settings.taxPercentage, taxIncluded)
         : 0,
-    totalBeforeDiscount = subTotal + delivery_charges + taxes;
+    // Tax that is already inside the price must not be added on top here either,
+    // or the "before discount" figure invents a discount that never existed.
+    totalBeforeDiscount =
+      subTotal + delivery_charges + (taxIncluded ? 0 : taxes);
 
-  totalPrice +=
-    delivery_charges + (settings.enpriceincludestax === "true" ? 0 : taxes);
+  totalPrice += delivery_charges + (taxIncluded ? 0 : taxes);
   if (totalPrice === 0) reqBody.method = "COD";
 
   return (
@@ -99,7 +102,7 @@ export default function (props) {
       <div>
         {getText(19)}
         <span style={{ color: "var(--primary)", fontWeight: "600" }}>
-          {subTotal + (settings.enpriceincludestax === "true" ? -taxes : 0)}{" "}
+          {(subTotal - (taxIncluded ? taxes : 0)).toFixed(2)}{" "}
           <CurrencySymbol />
         </span>
       </div>
@@ -304,7 +307,12 @@ function extractData(i, restaurant_id) {
 }
 
 function calcTaxes(price, percentage, taxIncluded) {
-  return (percentage / 100) * price;
+  // When the price already includes the tax, the tax is a share OF the price,
+  // not an addition TO it: 285 at 15% carries 37.17 of tax, not 42.75. Adding
+  // instead of extracting is what made the site disagree with the dashboard.
+  return taxIncluded
+    ? (percentage / (100 + percentage)) * price
+    : (percentage / 100) * price;
 }
 
 function isWithinWorkingHours({ schedule_data, is_schedulable }) {

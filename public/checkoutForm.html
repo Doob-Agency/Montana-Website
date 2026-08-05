@@ -22,7 +22,13 @@
   </head>
   <body>
     <section id="embedded-sessions"></section>
-    <script src="https://demo.myfatoorah.com/sessions/v1/session.js"></script>
+    <!-- MyFatoorah embedded payment. This host MUST match the environment the
+         backend creates the session on. myFatooraMode is "live" and the API base
+         is api-sa.myfatoorah.com, so the script has to be the live KSA one — the
+         demo script cannot find a live SessionId and renders "Sorry something
+         went wrong! Please contact system administrator." instead of the card
+         form. Switch back to demo.myfatoorah.com only alongside test mode. -->
+    <script src="https://sa.myfatoorah.com/sessions/v1/session.js"></script>
 
     <script>
       const reqURL = new URLSearchParams(window.location.search),
