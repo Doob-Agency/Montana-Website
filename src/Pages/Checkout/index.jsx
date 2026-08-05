@@ -215,12 +215,14 @@ export default function () {
       return redirect("/invoice", { state: invoiceState });
     }
 
-    // MyFatoorah is the only gateway with a payment page wired up, and only once
-    // the backend has handed back a session for it. Everything else used to fall
-    // through to here as well: a Moyasar order went to /payment with
-    // sessionId=undefined, where MyFatoorah's frame answered "refused to connect".
+    // MyFatoorah renders its card form in our own page from a session id.
     if (paymentMode === "myfatoorah" && res.data.sessionId)
       return initMyFatoorah(res.data.sessionId, res.data.order_id);
+
+    // Moyasar hosts the payment itself: the backend creates an invoice and hands
+    // back the URL to send the customer to. Moyasar returns them to
+    // /invoice/<id>?gateway=moyasar with the payment id appended.
+    if (res.data.payment_url) return (window.location.href = res.data.payment_url);
 
     // The order exists and is awaiting payment — say so instead of navigating to
     // a page that cannot take it.

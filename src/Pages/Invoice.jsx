@@ -217,12 +217,24 @@ export default () => {
         "Content-Type": "application/json",
         Authorization: window.localStorage.getItem("token"),
       },
-      body: JSON.stringify({
-        isSuccess: true,
-        order_id: params.id,
-        sessionId: query.get("sessionId"),
-        paymentId: query.get("paymentId"),
-      }),
+      // Moyasar returns to this page with ?gateway=moyasar&id=<payment id>; the
+      // callback endpoint branches on `gateway` and verifies the payment with
+      // Moyasar before marking the order paid. MyFatoorah keeps its own shape.
+      body: JSON.stringify(
+        query.get("gateway") === "moyasar"
+          ? {
+              isSuccess: true,
+              gateway: "moyasar",
+              order_id: params.id,
+              id: query.get("id"),
+            }
+          : {
+              isSuccess: true,
+              order_id: params.id,
+              sessionId: query.get("sessionId"),
+              paymentId: query.get("paymentId"),
+            },
+      ),
     })
       .then((r) => r.json())
       .then((res) => {
