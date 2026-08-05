@@ -5,6 +5,10 @@ import { useLocation, useParams, useSearchParams } from "react-router-dom";
 
 let errMsg = "";
 
+function isArabic() {
+  return window.localStorage.getItem("lang") === "العربية";
+}
+
 const getText = getPage("invoice");
 
 export default () => {
@@ -37,7 +41,22 @@ export default () => {
     [prevOrders],
   );
 
-  if (state === null) return null;
+  if (state === null)
+    return (
+      <div className="container">
+        <div
+          className="text-center py-5"
+          style={{ color: "var(--midgray)", fontWeight: "400" }}
+        >
+          <div className="spinner-border mb-3" role="status" />
+          <span className="d-block h5">
+            {isArabic()
+              ? "جارٍ تأكيد الدفع…"
+              : "Confirming your payment…"}
+          </span>
+        </div>
+      </div>
+    );
   else if (state === false) {
     return (
       <div className="container">
@@ -50,7 +69,16 @@ export default () => {
           }}
         >
           <span className="d-block h3 text-danger">{getText(0)}</span>
-          {errMsg}
+          {errMsg || (
+            <span className="d-block">
+              {isArabic()
+                ? "تم استلام الدفع، لكن تعذّر عرض الفاتورة. الطلب مسجّل — يمكنك مراجعته من حسابك."
+                : "Your payment went through, but the invoice could not be displayed. The order is saved — you can review it from your account."}
+            </span>
+          )}
+          <a href="/" className="btn mt-4 d-inline-block">
+            {isArabic() ? "العودة للرئيسية" : "Back to home"}
+          </a>
         </div>
       </div>
     );
