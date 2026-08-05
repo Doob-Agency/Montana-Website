@@ -238,13 +238,22 @@ export default () => {
     })
       .then((r) => r.json())
       .then((res) => {
-        if (res.success) {
-          const data = getOrderData(+params.id, prevOrders);
-          setState(data);
-        } else {
+        if (!res.success) {
           errMsg = res.message;
-          setState(false);
+          return setState(false);
         }
+
+        const data =
+          buildInvoice(res.data) || getOrderData(+params.id, prevOrders);
+
+        // Paid, but nothing renderable came back — say so instead of showing a
+        // blank page to someone who has just been charged.
+        if (!data) {
+          errMsg = res.message || "";
+          return setState(false);
+        }
+
+        setState(data);
       });
   }
 };
@@ -263,8 +272,16 @@ function ProductItem({ id, name, price, quantity }) {
 }
 
 function getOrderData(orderId, prevOrders) {
-  const orderData = prevOrders.find(({ id }) => id === orderId);
-  if (!orderData) return null;
+  return buildInvoice(prevOrders.find(({ id }) => id === orderId));
+}
+
+// The customer lands here on a fresh page load after the gateway redirects back,
+// so the order list is usually still empty or stale — looking the order up in it
+// returned null and the page rendered nothing at all. The payment callback
+// already answers with the order, so draw from that and keep the list as a
+// fallback for the routes that arrive with ?orderId= and no callback.
+function buildInvoice(orderData) {
+  if (!orderData || !orderData.orderitems || !orderData.restaurant) return null;
 
   const isDelivery = orderData.delivery_type === 2,
     result = {};
