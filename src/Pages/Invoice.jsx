@@ -13,7 +13,7 @@ export default () => {
     LOC = useLocation(),
     { prevOrders, data: userData } = useSelector((e) => e.User),
     dispatch = useDispatch(),
-    [state, setState] = useState(LOC.state),
+    [state, setState] = useState(LOC.state === undefined ? null : LOC.state),
     // The effect re-runs whenever the order list arrives, and `state` is still
     // null while the first request is in flight — so the payment was confirmed
     // two or three times per visit. Each confirmation re-ran the whole
@@ -55,6 +55,8 @@ export default () => {
       </div>
     );
   }
+
+  if (!state || typeof state !== "object") return null;
 
   if (!orderId) {
     window.localStorage.removeItem("coupon");
@@ -259,6 +261,11 @@ export default () => {
         }
 
         setState(data);
+      })
+      .catch(function (e) {
+        errMsg = "";
+        console.error("invoice:", e && e.message);
+        setState(false);
       });
   }
 };
@@ -286,6 +293,15 @@ function getOrderData(orderId, prevOrders) {
 // already answers with the order, so draw from that and keep the list as a
 // fallback for the routes that arrive with ?orderId= and no callback.
 function buildInvoice(orderData) {
+  try {
+    return buildInvoiceOrThrow(orderData);
+  } catch (e) {
+    console.error("invoice: could not build from order", e && e.message);
+    return null;
+  }
+}
+
+function buildInvoiceOrThrow(orderData) {
   if (!orderData || !orderData.orderitems || !orderData.restaurant) return null;
 
   const isDelivery = orderData.delivery_type === 2,
@@ -311,7 +327,7 @@ function buildInvoice(orderData) {
   result.comment = orderData.order_comment;
   result.PIN = orderData.delivery_pin;
   result.tax_amount = orderData.tax_amount;
-  result.date = orderData.updated_at.split(" ");
+  result.date = String(orderData.updated_at || "").split(" ");
   result.subTotal = orderData.sub_total;
   result.discount = +orderData.coupon_amount + +orderData.pay_from_wallet;
   result.total = orderData.total;
