@@ -363,31 +363,39 @@ function isWithinWorkingHours({ schedule_data, is_schedulable }) {
     const workingHours = JSON.parse(schedule_data),
       targetDay = Object.keys(workingHours).find((d) => day.test(d));
 
-    if (targetDay) {
-      // Minutes since midnight is enough here, and avoids the old version's habit
-      // of mutating currTime with setHours while still reading from it.
-      const mins = currTime.getHours() * 60 + currTime.getMinutes();
+    // Minutes since midnight is enough here, and avoids the old version's habit
+    // of mutating currTime with setHours while still reading from it.
+    const mins = currTime.getHours() * 60 + currTime.getMinutes();
 
-      const toMins = (t) => {
-        const p = String(t).split(/\D/);
-        return (+p[0] || 0) * 60 + (+p[1] || 0);
-      };
+    const toMins = (t) => {
+      const p = String(t).split(/\D/);
+      return (+p[0] || 0) * 60 + (+p[1] || 0);
+    };
+    const usable = (r) => r && r.open && r.close;
 
-      return workingHours[targetDay].some((resData) => {
-        if (!resData || !resData.open || !resData.close) return false;
+    // A slot closing at or before it opens runs past midnight. Today's copy of
+    // such a slot contributes only its tail — from the opening time to midnight.
+    const openToday = (r) => {
+      const open = toMins(r.open),
+        close = toMins(r.close);
+      return close > open ? mins >= open && mins < close : mins >= open;
+    };
 
-        const open = toMins(resData.open),
-          close = toMins(resData.close);
+    // Its early hours belong to the day it STARTED on. At 00:09 a branch working
+    // 10:04–03:04 is open, but those hours are recorded against yesterday — and
+    // nothing looked there, so the branch refused orders all night.
+    const spilledFromYesterday = (r) =>
+      toMins(r.close) <= toMins(r.open) && mins < toMins(r.close);
 
-        // A closing time at or before the opening time runs past midnight, so the
-        // slot covers open→end of day and start of day→close. Compared straight
-        // through, a late shift matched nothing and the branch refused orders
-        // through the very hours it was open.
-        return close > open
-          ? mins >= open && mins < close
-          : mins >= open || mins < close;
-      });
-    }
+    const prevDay = days[(currTime.getDay() + 6) % 7],
+      prevKey = Object.keys(workingHours).find((d) => prevDay.test(d));
+
+    const openNow =
+      (targetDay && workingHours[targetDay].filter(usable).some(openToday)) ||
+      (prevKey &&
+        workingHours[prevKey].filter(usable).some(spilledFromYesterday));
+
+    return !!openNow;
   }
 
   return true;
