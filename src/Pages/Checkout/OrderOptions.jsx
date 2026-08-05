@@ -87,7 +87,6 @@ export default function ({
           data-active={!delivery}
           onClick={() => {
             setDelivery(false);
-            setPaymentMethod("myfatoorah");
           }}
         >
           <img
@@ -110,7 +109,6 @@ export default function ({
           onClick={() => {
             if (isExceptionalCart) return;
             setDelivery(true);
-            setPaymentMethod("myfatoorah");
           }}
         >
           <img

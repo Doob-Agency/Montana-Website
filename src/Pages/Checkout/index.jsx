@@ -26,7 +26,8 @@ export default function () {
     dispatch = useDispatch(),
     [err, setErr] = useState(""),
     deliveryState = useState(true),
-    payment = useState("myfatoorah"),
+    // no default gateway: OrderInfo selects the first one System Settings enables
+    payment = useState(""),
     resIdState = useState(null);
 
   const currRes = store.Restaurant.data,

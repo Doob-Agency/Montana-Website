@@ -4,12 +4,13 @@ import Products from "./products.js";
 import User from "./user.js";
 import Restaurant from "./restaurant.js";
 import Sliders from "./sliders.js";
+import gateways from "./gateways.js";
 import settings from "./settings.js";
 
 const cartMsg =
     "لا يمكن اضافة الطلب المخصص الى العربة بجانب الطلبات الأخرى، هل تريد إخلاء العربة؟",
   APP_STATE = configureStore({
-    reducer: { Products, User, Restaurant, Sliders, settings },
+    reducer: { Products, User, Restaurant, Sliders, settings, gateways },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(cartValidation), // Add custom middleware here
   });
@@ -95,6 +96,11 @@ fetch(baseUrl + "/get-all-restaurant", fetchOpts)
 fetch(baseUrl + "/getSliders")
   .then((r) => r.json())
   .then((r) => APP_STATE.dispatch({ type: "sliders/init", payload: r }));
+
+fetch(baseUrl + "/getPaymentGateways")
+  .then((r) => r.json())
+  .then((r) => APP_STATE.dispatch({ type: "gateways/init", payload: r }))
+  .catch(() => APP_STATE.dispatch({ type: "gateways/init", payload: [] }));
 
 const savedSlug = window.localStorage.getItem("slug");
 

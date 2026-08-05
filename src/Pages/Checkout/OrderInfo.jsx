@@ -1,9 +1,16 @@
 import { useLayoutEffect, useState } from "react";
-import { useStore } from "react-redux";
+import { useSelector, useStore } from "react-redux";
 import { calcCashback } from "../Cart";
 import { _useCoupon } from "../Cart";
 import getPage from "../../translation";
 import CurrencySymbol from "../../CurrencySymbol";
+
+// Gateway rows come from the database by name; these are just what the customer
+// sees. Anything without an entry falls back to the raw name rather than vanishing.
+const GATEWAY_LABELS = {
+  myfatoorah: { ar: "ماي فاتورة", en: "MyFatoorah" },
+  moyasar: { ar: "ميسر", en: "Moyasar" },
+};
 
 const getText = getPage("checkout"),
   days = [/^sun/i, /^mon/i, /^tue/i, /^wed/i, /^thu/i, /^fri/i, /^sat/i],
@@ -91,6 +98,29 @@ export default function (props) {
 
   totalPrice += delivery_charges + (taxIncluded ? 0 : taxes);
   if (totalPrice === 0) reqBody.method = "COD";
+
+  // Which gateways the customer may pay with is System Settings' call alone.
+  // Checkout used to hardcode "myfatoorah", so switching gateways in the
+  // dashboard changed nothing here.
+  const activeGateways = useSelector((e) => e.gateways).list,
+    codAllowed = !isExceptionalCart && settings[deliveryTargetOption] === "true",
+    payMethods = activeGateways
+      .filter((g) => (isCOD(g.name) ? codAllowed : true))
+      .map((g) => ({
+        value: g.name,
+        label: isCOD(g.name)
+          ? getText(30)
+          : (GATEWAY_LABELS[g.name] || {})[isArabic ? "ar" : "en"] || g.name,
+      })),
+    methodKey = payMethods.map((m) => m.value).join("|");
+
+  // Settings load after the first render, and delivery/pickup change whether COD
+  // is offered — either can leave a method selected that is no longer on offer.
+  useLayoutEffect(() => {
+    if (!payMethods.length) return;
+    if (!payMethods.some((m) => m.value === paymentMethod))
+      setPaymentMethod(payMethods[0].value);
+  }, [methodKey, paymentMethod]);
 
   return (
     <div className="p-3" style={{ color: "var(--midgray)" }}>
@@ -195,28 +225,25 @@ export default function (props) {
           {getText(28)}
         </span>
 
-        <label className="d-flex gap-2 mb-3">
-          <input
-            type="radio"
-            name="payment"
-            onChange={() => setPaymentMethod("myfatoorah")}
-            checked={paymentMethod === "myfatoorah"}
-          />
-          {getText(29)}
-        </label>
-
-        {isExceptionalCart ||
-          (settings[deliveryTargetOption] === "true" && (
-            <label className="d-flex gap-2">
+        {payMethods.length ? (
+          payMethods.map((m) => (
+            <label className="d-flex gap-2 mb-3" key={m.value}>
               <input
                 type="radio"
                 name="payment"
-                onChange={() => setPaymentMethod("COD")}
-                checked={paymentMethod === "COD"}
+                onChange={() => setPaymentMethod(m.value)}
+                checked={paymentMethod === m.value}
               />
-              {getText(30)}
+              {m.label}
             </label>
-          ))}
+          ))
+        ) : (
+          <p className="text-center m-0" style={{ color: "var(--sec)" }}>
+            {isArabic
+              ? "لا توجد طريقة دفع مفعّلة حالياً"
+              : "No payment method is currently enabled"}
+          </p>
+        )}
       </form>
       {/* )} */}
 
@@ -226,6 +253,7 @@ export default function (props) {
             <button
               type="button"
               onClick={placeOrder}
+              disabled={!paymentMethod}
               className="btn mt-4 mx-auto w-100"
             >
               {getText(31)}
@@ -304,6 +332,10 @@ function extractData(i, restaurant_id) {
     quantity: emptyStr + i.quantity,
     selectedaddons: i.addons.map((a) => ({ ...a, price: emptyStr + a.price })),
   };
+}
+
+function isCOD(name) {
+  return String(name).toUpperCase() === "COD";
 }
 
 function calcTaxes(price, percentage, taxIncluded) {

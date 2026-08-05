@@ -27,17 +27,19 @@ export default ({ sectionName, data }) => {
         <div className="d-flex flex-wrap gap-3 justify-content-around">
           {data.slice(0, 4).map(sectionItem)}
 
-          <Link
-            className="align-items-center d-none d-md-flex flex-column gap-2 p-4"
-            to={"/all-products/" + data[4].name + "?miniCategories=1"}
-          >
-            <img
-              className="my-auto"
-              src={data[4].image_url}
-              alt={data[4].name}
-            />
-            <h3 className="m-0 h5">{data[4].name}</h3>
-          </Link>
+          {data[4] && (
+            <Link
+              className="align-items-center d-none d-md-flex flex-column gap-2 p-4"
+              to={"/all-products/" + data[4].name + "?miniCategories=1"}
+            >
+              <img
+                className="my-auto"
+                src={data[4].image_url}
+                alt={data[4].name}
+              />
+              <h3 className="m-0 h5">{data[4].name}</h3>
+            </Link>
+          )}
         </div>
 
         <ExtraItem url={"/all-products/"} />
