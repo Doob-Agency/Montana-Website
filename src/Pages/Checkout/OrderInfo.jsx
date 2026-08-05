@@ -364,16 +364,28 @@ function isWithinWorkingHours({ schedule_data, is_schedulable }) {
       targetDay = Object.keys(workingHours).find((d) => day.test(d));
 
     if (targetDay) {
-      const time = currTime.getTime();
+      // Minutes since midnight is enough here, and avoids the old version's habit
+      // of mutating currTime with setHours while still reading from it.
+      const mins = currTime.getHours() * 60 + currTime.getMinutes();
+
+      const toMins = (t) => {
+        const p = String(t).split(/\D/);
+        return (+p[0] || 0) * 60 + (+p[1] || 0);
+      };
 
       return workingHours[targetDay].some((resData) => {
-        const openingTime = resData.open.split(/\D/),
-          closingTime = resData.close.split(/\D/);
+        if (!resData || !resData.open || !resData.close) return false;
 
-        const validStart = currTime.setHours(openingTime[0], openingTime[1]),
-          validEnd = currTime.setHours(closingTime[0], closingTime[1]);
+        const open = toMins(resData.open),
+          close = toMins(resData.close);
 
-        return time === Math.min(Math.max(time, validStart), validEnd);
+        // A closing time at or before the opening time runs past midnight, so the
+        // slot covers open→end of day and start of day→close. Compared straight
+        // through, a late shift matched nothing and the branch refused orders
+        // through the very hours it was open.
+        return close > open
+          ? mins >= open && mins < close
+          : mins >= open || mins < close;
       });
     }
   }
