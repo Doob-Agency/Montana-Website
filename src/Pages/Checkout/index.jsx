@@ -12,6 +12,10 @@ import "./index.scss";
 const sessionContainer = document.getElementById("session-container"),
   paymentForm = document.createElement("iframe");
 
+function isArabic() {
+  return window.localStorage.getItem("lang") === "العربية";
+}
+
 const getText = getPage("checkout"),
   complimentaryData = {},
   placeOrderApi = process.env.REACT_APP_API_URL + "/public/api/place-order",
@@ -189,10 +193,10 @@ export default function () {
         clues.userAddresses[store.User.activeAddressIndex].tag;
     }
 
-    if (
-      paymentMode === "COD" ||
-      (paymentMode === "myfatoorah") & (res.data.total === 0)
-    ) {
+    // Nothing left to pay — straight to the invoice, whichever gateway was picked.
+    // (Was `paymentMode === "myfatoorah" & total === 0`, which both used a bitwise
+    // & and only ever let MyFatoorah through.)
+    if (paymentMode === "COD" || res.data.total === 0) {
       const { data } = res,
         invoiceState = {
           ...basicOrderData,
@@ -211,13 +215,20 @@ export default function () {
       return redirect("/invoice", { state: invoiceState });
     }
 
-    try {
-      initMyFatoorah(res.data.sessionId, res.data.order_id);
-    } catch (e) {
-      debugger;
-    }
+    // MyFatoorah is the only gateway with a payment page wired up, and only once
+    // the backend has handed back a session for it. Everything else used to fall
+    // through to here as well: a Moyasar order went to /payment with
+    // sessionId=undefined, where MyFatoorah's frame answered "refused to connect".
+    if (paymentMode === "myfatoorah" && res.data.sessionId)
+      return initMyFatoorah(res.data.sessionId, res.data.order_id);
 
-    // return (window.location.href = res.data.link);
+    // The order exists and is awaiting payment — say so instead of navigating to
+    // a page that cannot take it.
+    return setErr(
+      isArabic()
+        ? "تم إنشاء الطلب، لكن لا يمكن إتمام الدفع عبر هذه الوسيلة حالياً. تواصل معنا لإتمام الطلب."
+        : "Your order was created, but payment cannot be completed with this method right now. Please contact us to finish it.",
+    );
   }
 }
 
