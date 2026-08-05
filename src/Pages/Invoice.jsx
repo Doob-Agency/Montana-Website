@@ -1,6 +1,6 @@
 import getPage from "../translation";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
 
 let errMsg = "";
@@ -13,20 +13,25 @@ export default () => {
     LOC = useLocation(),
     { prevOrders, data: userData } = useSelector((e) => e.User),
     dispatch = useDispatch(),
-    [state, setState] = useState(LOC.state);
+    [state, setState] = useState(LOC.state),
+    // The effect re-runs whenever the order list arrives, and `state` is still
+    // null while the first request is in flight — so the payment was confirmed
+    // two or three times per visit. Each confirmation re-ran the whole
+    // post-payment routine on the server.
+    confirmed = useRef(false);
 
   const orderId = query.get("orderId");
 
   useEffect(
     function () {
-      if (state === null) {
-        // const data = getOrderData(+(orderId || params.id), prevOrders);
-        // setState(data);
-        if (params.id) instantPaymentInvoice();
-        else if (orderId) {
-          const data = getOrderData(+orderId, prevOrders);
-          setState(data);
-        }
+      if (state !== null) return;
+
+      if (params.id) {
+        if (confirmed.current) return;
+        confirmed.current = true;
+        instantPaymentInvoice();
+      } else if (orderId) {
+        setState(getOrderData(+orderId, prevOrders));
       }
     },
     [prevOrders],
