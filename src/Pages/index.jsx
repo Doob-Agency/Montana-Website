@@ -33,6 +33,7 @@ import PaymentForm from "./PaymentForm.jsx";
 import Header from "../Header";
 import Nav from "../Nav";
 import Footer from "../Footer.jsx";
+import ErrorBoundary from "../ErrorBoundary.jsx";
 import Jobs from "./Jobs.jsx";
 import { useFeature } from "../store/features";
 import NotFound from "./NotFound.jsx";
@@ -152,6 +153,7 @@ function App() {
         </>
       )}
 
+      <ErrorBoundary>
       <Routes>
         <Route path="/" caseSensitive={true} Component={HomePage} />
         <Route path="/payment" Component={PaymentForm} />
@@ -190,6 +192,7 @@ function App() {
 
         <Route path="*" Component={NotFound} />
       </Routes>
+      </ErrorBoundary>
       {createPortal(Nav(isMobileView), nav)}
       {createPortal(Footer(), footer)}
     </>

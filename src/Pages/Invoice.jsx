@@ -144,11 +144,11 @@ export default () => {
         >
           <li>
             <span style={{ fontWeight: "bold" }}>اسم العميل: </span>
-            {userData.name}
+            {userData && userData.name}
           </li>
           <li>
             <span style={{ fontWeight: "bold" }}>رقم الجوال: </span>
-            {userData.phone}
+            {userData && userData.phone}
           </li>
           <li>
             <span style={{ fontWeight: "bold" }}>العنوان: </span>
@@ -178,16 +178,16 @@ export default () => {
           style={{ textAlign: "start" }}
         >
           الخصم
-          <span>{state.discount.toFixed(2)}</span>
+          <span>{(+state.discount || 0).toFixed(2)}</span>
         </p>
 
-        {state.tax_amount ? (
+        {+state.tax_amount ? (
           <p
             className="d-flex justify-content-between m-0 w-100"
             style={{ textAlign: "start" }}
           >
             الضريبة ({+state.tax || 0}%){" "}
-            <span>{state.tax_amount.toFixed(2)}</span>
+            <span>{(+state.tax_amount).toFixed(2)}</span>
           </p>
         ) : null}
 
