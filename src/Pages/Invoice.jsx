@@ -85,11 +85,17 @@ export default () => {
           }}
         >
           <span className="d-block h3 text-danger">{getText(0)}</span>
-          {errMsg || (
-            <span className="d-block">
-              {isArabic()
-                ? "تم استلام الدفع، لكن تعذّر عرض الفاتورة. الطلب مسجّل — يمكنك مراجعته من حسابك."
-                : "Your payment went through, but the invoice could not be displayed. The order is saved — you can review it from your account."}
+          <span className="d-block">
+            {isArabic()
+              ? "تم استلام الدفع، لكن تعذّر عرض الفاتورة. الطلب مسجّل — يمكنك مراجعته من حسابك."
+              : "Your payment went through, but the invoice could not be displayed. The order is saved — you can review it from your account."}
+          </span>
+          {errMsg && (
+            <span
+              className="d-block mt-2"
+              style={{ fontSize: "0.85rem", opacity: 0.75 }}
+            >
+              {errMsg}
             </span>
           )}
           <a href="/" className="btn mt-4 d-inline-block">
@@ -266,7 +272,8 @@ export default () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: window.localStorage.getItem("token"),
+        Accept: "application/json",
+        Authorization: window.localStorage.getItem("token") || "",
       },
       // Moyasar returns to this page with ?gateway=moyasar&id=<payment id>; the
       // callback endpoint branches on `gateway` and verifies the payment with
@@ -307,8 +314,8 @@ export default () => {
         setState(data);
       })
       .catch(function (e) {
-        errMsg = "";
-        console.error("invoice:", e && e.message);
+        errMsg = (e && e.message) || "";
+        console.error("invoice:", e);
         setState(false);
       });
   }
