@@ -39,6 +39,16 @@ export default function () {
   const [params] = useSearchParams();
   const [loaded, setLoaded] = useState(false);
 
+  // The header search lands here with ?q=…; seed the filter from it so the
+  // result page opens on the term rather than the full catalogue.
+  const queryParam = params.get("q") || emptyStr;
+  const [seededQuery, setSeededQuery] = useState(emptyStr);
+
+  if (queryParam && queryParam !== seededQuery) {
+    setSeededQuery(queryParam);
+    setProductName(queryParam);
+  }
+
   const viewOccassions = params.has("occassions"),
     excludedCategories = data.filter(
       (i) =>
@@ -74,6 +84,7 @@ export default function () {
           <input
             type="search"
             placeholder={getText(0)}
+            value={productName}
             onChange={({ target }) => setProductName(target.value)}
             className="input-group-text m-0 w-100"
             style={{ outline: "none", borderColor: "#ecf5ff" }}

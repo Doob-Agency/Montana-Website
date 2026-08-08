@@ -8,6 +8,8 @@ import NXT from "../../icons/NXT";
 import OrderOptions from "./OrderOptions";
 import OrderInfo from "./OrderInfo";
 import { paymentLabel } from "../Invoice.jsx";
+import { appUrl, hardRedirect } from "../../basePath.js";
+import { prefersDelivery } from "../../store/orderMode.js";
 import "./index.scss";
 
 const sessionContainer = document.getElementById("session-container"),
@@ -30,7 +32,9 @@ export default function () {
     store = useStore().getState(),
     dispatch = useDispatch(),
     [err, setErr] = useState(""),
-    deliveryState = useState(true),
+    // Start from what the shopper picked in the header instead of assuming
+    // delivery and surprising a pickup customer with a fee.
+    deliveryState = useState(prefersDelivery),
     // no default gateway: OrderInfo selects the first one System Settings enables
     payment = useState(""),
     resIdState = useState(null);
@@ -399,12 +403,11 @@ Object.assign(complimentaryData, {
   pending_payment: "",
   // partial_wallet: "",
   auto_acceptable: false,
-  CallBackUrl: window.location.origin + "/invoice/",
+  CallBackUrl: appUrl("/invoice/"),
 });
 
 export function initMyFatoorah(sessionId, orderId) {
-  window.location.href =
-    "/payment?sessionId=" + sessionId + "&orderId=" + orderId;
+  hardRedirect("/payment?sessionId=" + sessionId + "&orderId=" + orderId);
 
   // paymentForm.src =
   // "/checkoutForm.html?sessionId=" + sessionId + "&orderId=" + orderId;
