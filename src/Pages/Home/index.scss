@@ -183,10 +183,32 @@
 
 /* --- product grid ------------------------------------------------------- */
 
+/**
+ * 240px keeps this at four columns on a full-width desktop, so a shelf of eight
+ * fills two rows exactly. At 190px it fitted five and left a single card
+ * stranded on a row of its own.
+ */
 .mt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--mt-4);
+}
+
+/* Phones: two per row. One column made every card a full-width slab that took
+   a whole screen to scroll past. */
+@media (max-width: 620px) {
+  .mt-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--mt-3);
+  }
+
+  .mt-card__name {
+    font-size: 0.8rem;
+  }
+
+  .mt-card .mt-price {
+    font-size: 0.9rem;
+  }
 }
 
 .mt-card {
@@ -216,6 +238,17 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    /* Set by ProductCard when the catalogue image 404s — a cake glyph reads as
+       "no photo yet" where an empty tile reads as a broken page. */
+    &[data-no-image="true"]::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--mt-navy-soft)
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' fill='none' stroke='%230b4368' stroke-opacity='.35' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 30h40v16a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z'/%3E%3Cpath d='M8 34c4 0 4 4 8 4s4-4 8-4 4 4 8 4 4-4 8-4 4 4 8 4'/%3E%3Cpath d='M28 30V18M28 14v-2'/%3E%3C/svg%3E")
+        center / 56px no-repeat;
     }
   }
 

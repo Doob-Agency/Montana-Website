@@ -61,6 +61,13 @@ export default function ProductCard({ item }) {
           alt={item[nameKey] || item.name}
           loading="lazy"
           decoding="async"
+          // Some catalogue rows point at an image that is no longer on disk;
+          // without this the card renders as a blank rectangle with a price
+          // under it. Hide the broken image and let the tile's fallback show.
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+            e.currentTarget.parentElement.dataset.noImage = "true";
+          }}
         />
         <Availability item={item} isAvailable={isAvailable} status={status} />
         {oldPrice > price && (
