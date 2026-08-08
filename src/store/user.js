@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { hardRedirect } from "../basePath.js";
 
 const User = {
     name: "user",
@@ -37,7 +38,7 @@ reducers.logout = function (state) {
   state.alerts = [];
   state.addresses = [];
   window.localStorage.removeItem("token");
-  window.location.href = "/";
+  hardRedirect("/");
 };
 
 reducers.setLoc = function (state, action) {

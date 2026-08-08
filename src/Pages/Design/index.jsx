@@ -12,7 +12,7 @@ import Cart from "../../icons/Cart";
 import "./index.scss";
 
 const getText = getPage("design"),
-  fallbackSrc = "/assets/home/img-placeholder.png";
+  fallbackSrc = process.env.PUBLIC_URL + "/assets/home/img-placeholder.png";
 
 export default function () {
   const products = useSelector((e) => e.Products),

@@ -195,7 +195,7 @@ function orderItem(order) {
             }}
           >
             <img
-              src="/assets/settings/rewind.png"
+              src={process.env.PUBLIC_URL + "/assets/settings/rewind.png"}
               style={{ maxHeight: "16px" }}
               alt="reorder"
             />

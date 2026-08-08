@@ -53,7 +53,7 @@ function AddressItem({ created_at, tag, house, address, landmark }) {
       style={{ cssText: "border: 2px solid #a8d0ec; border-radius: 24px" }}
     >
       <label className="align-items-center d-flex gap-2 h-100 justify-content-start p-3 w-100">
-        <img src="/assets/settings/address.png" alt="icon" />
+        <img src={process.env.PUBLIC_URL + "/assets/settings/address.png"} alt="icon" />
 
         <div
           className="d-grid gap-2"

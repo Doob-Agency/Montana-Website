@@ -79,8 +79,8 @@ export default ({ sectionName, data }) => {
 
        <svg style={{ maxWidth: "16px", maxHeight: "16px" }}>
          <use
-           xlinkHref="/assets/home/icons/left-arrow.svg"
-           href="/assets/home/icons/left-arrow.svg"
+           xlinkHref={process.env.PUBLIC_URL + "/assets/home/icons/left-arrow.svg"}
+           href={process.env.PUBLIC_URL + "/assets/home/icons/left-arrow.svg"}
            width="12"
            height="14"
          ></use>

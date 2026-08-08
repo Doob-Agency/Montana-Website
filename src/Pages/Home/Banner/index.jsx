@@ -16,13 +16,13 @@ export default () => (
 
     <ul style={{ gridTemplateRows: "1fr 1fr", maxHeight: "570px" }}>
       <li>
-        <img src="/assets/home/banner/(1).png" alt="figure" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/banner/(1).png"} alt="figure" />
       </li>
       <li>
-        <img src="/assets/home/banner/(2).png" alt="figure" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/banner/(2).png"} alt="figure" />
       </li>
       <li>
-        <img src="/assets/home/banner/(0).png" alt="figure" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/banner/(0).png"} alt="figure" />
       </li>
     </ul>
   </section>

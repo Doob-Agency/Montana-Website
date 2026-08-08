@@ -6,18 +6,22 @@ let lang = "العربية",
 
 async function initLangs(callback) {
   const activeLang = window.localStorage.getItem("lang"),
-    langsMap = await fetch("/assets/languages/map.json", {
+    langsMap = await fetch(process.env.PUBLIC_URL + "/assets/languages/map.json", {
       method: "GET",
     }).then((r) => r.json());
 
   keys = Object.keys(langsMap);
   activeLang && (lang = activeLang);
 
-  file = await fetch("/assets/languages/" + langsMap[lang]).then((r) =>
+  file = await fetch(process.env.PUBLIC_URL + "/assets/languages/" + langsMap[lang]).then((r) =>
     r.json(),
   );
 
-  document.body.dir = lang === "العربية" ? "rtl" : "ltr";
+  // index.html ships as ar/rtl; correct the root element too when the visitor
+  // has picked English, so screen readers and hyphenation follow the content.
+  const isArabic = lang === "العربية";
+  document.documentElement.lang = isArabic ? "ar" : "en";
+  document.documentElement.dir = document.body.dir = isArabic ? "rtl" : "ltr";
 
   window.localStorage.setItem("lang", lang);
   observers.forEach((o) => o());

@@ -50,7 +50,7 @@ export default function () {
 function orderItem({ id, date, price, quantity, isDelevered, rate }) {
   const stars = Array(5).fill((U, I) => (
     <img
-      src={"/assets/home/icons/" + (I < rate ? "star" : "blank-star") + ".svg"}
+      src={process.env.PUBLIC_URL + "/assets/home/icons/" + (I < rate ? "star" : "blank-star") + ".svg"}
       alt="star"
     />
   ));
@@ -94,11 +94,11 @@ function orderItem({ id, date, price, quantity, isDelevered, rate }) {
             " grid-template-columns: repeat(5, 1fr); overflow: hidden; grid-auto-rows: 74px; justify-items: center;",
         }}
       >
-        <img src="/assets/home/products/(0).png" alt="img" />
-        <img src="/assets/home/products/(0).png" alt="img" />
-        <img src="/assets/home/products/(0).png" alt="img" />
-        <img src="/assets/home/products/(0).png" alt="img" />
-        <img src="/assets/home/products/(0).png" alt="img" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/products/(0).png"} alt="img" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/products/(0).png"} alt="img" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/products/(0).png"} alt="img" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/products/(0).png"} alt="img" />
+        <img src={process.env.PUBLIC_URL + "/assets/home/products/(0).png"} alt="img" />
       </div>
 
       <div

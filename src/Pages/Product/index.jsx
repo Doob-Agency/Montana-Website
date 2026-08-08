@@ -93,7 +93,7 @@ function ProductInfo(state) {
         className="align-items-center d-flex gap-2"
         style={{ maxHeight: "40px" }}
       >
-        <img src="/assets/cals.png" alt="cals" />
+        <img src={process.env.PUBLIC_URL + "/assets/cals.png"} alt="cals" />
         <h3 style={{ fontSize: "inherit" }} className="m-0">
           {calsTxt}
         </h3>
@@ -184,7 +184,7 @@ function ProductInfo(state) {
       >
         {getText(2)}
         <img
-          src={baseUrl + "/assets/animation.gif"}
+          src={baseUrl + process.env.PUBLIC_URL + "/assets/animation.gif"}
           style={{ maxHeight: "40px" }}
           alt="loader"
         />
@@ -231,7 +231,7 @@ function ProductInfo(state) {
         {/* {cals} */}
 
         {/* <div className="align-items-center d-flex rate">
-          <img src="/assets/home/icons/star.svg" alt="star" /> 5
+          <img src={process.env.PUBLIC_URL + "/assets/home/icons/star.svg"} alt="star" /> 5
           <Link to="/rate">{getText(7)}</Link>
         </div> */}
 

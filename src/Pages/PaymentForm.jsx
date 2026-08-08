@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { hardRedirect } from "../basePath.js";
 
 /**
  * MyFatoorah serves the embedded-payment script from a different host per
@@ -87,7 +88,9 @@ function initPaymentForm() {
     sessionId: reqURL.get("sessionId"),
     callback(res) {
       if (res.isSuccess) {
-        window.location.href = `/invoice/${reqURL.get("orderId")}?paymentId=${extractPaymentId(res)}&sessionId=${reqURL.get("sessionId")}`;
+        hardRedirect(
+          `/invoice/${reqURL.get("orderId")}?paymentId=${extractPaymentId(res)}&sessionId=${reqURL.get("sessionId")}`,
+        );
       }
     },
   });

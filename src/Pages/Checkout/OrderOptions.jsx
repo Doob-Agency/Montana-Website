@@ -169,7 +169,7 @@ export default function ({
           }}
         >
           <img
-            src="/assets/home/logo.svg"
+            src={process.env.PUBLIC_URL + "/assets/home/logo.svg"}
             style={{ maxHeight: "40px" }}
             alt="icon"
           />
@@ -217,7 +217,7 @@ export default function ({
           onClick={() => setResId(id)}
           className="align-items-center d-flex gap-2 h-100 justify-content-start px-3 py-1 w-100"
         >
-          <img src="/assets/settings/address.png" alt="icon" />
+          <img src={process.env.PUBLIC_URL + "/assets/settings/address.png"} alt="icon" />
 
           <div
             className="d-grid gap-2"
@@ -249,7 +249,7 @@ export default function ({
           onClick={() => setActiveAddress(i)}
           className="align-items-center d-flex gap-2 h-100 justify-content-start px-3 py-1 w-100"
         >
-          <img src="/assets/settings/address.png" alt="icon" />
+          <img src={process.env.PUBLIC_URL + "/assets/settings/address.png"} alt="icon" />
 
           <div
             className="d-grid gap-2"

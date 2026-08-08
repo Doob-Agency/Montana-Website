@@ -1,0 +1,36 @@
+# Client-side routing for the redesigned storefront.
+#
+# The build is deployed into /new on montana.doobagency.com, next to the old
+# site at the domain root and the dashboard at /admin. Apache must hand every
+# unknown path under /new back to this folder's index.html so React Router can
+# resolve it, without touching the two neighbours.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /new/
+
+  # Real files and folders are served as-is.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Everything else is a React route.
+  RewriteRule . /new/index.html [L]
+</IfModule>
+
+# index.html must never be cached: it carries the hashed bundle names, so a
+# stale copy pins visitors to a deleted build.
+<IfModule mod_headers.c>
+  <FilesMatch "index\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+
+  # Hashed build assets change name on every deploy, so they can be cached hard.
+  <FilesMatch "\.(js|css|woff2?|svg|png|jpe?g|webp|avif|gif|ico|mp4)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>

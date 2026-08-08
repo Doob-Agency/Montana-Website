@@ -57,7 +57,7 @@ export default () => {
 
   return (
     <section id="invoice" className="container">
-      <img className="d-block mx-auto" src="/assets/check.gif" alt="success" />
+      <img className="d-block mx-auto" src={process.env.PUBLIC_URL + "/assets/check.gif"} alt="success" />
 
       <fieldset
         className="gap-3 m-0 row"

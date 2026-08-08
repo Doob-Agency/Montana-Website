@@ -16,7 +16,7 @@ export default function () {
   return (
     <section id="settings-mobile" className="position-relative container">
       <div id="personal" className="align-items-center d-flex gap-3 p-3  mb-3">
-        <img src="/assets/settings/avatar.png" alt="avatar" />
+        <img src={process.env.PUBLIC_URL + "/assets/settings/avatar.png"} alt="avatar" />
 
         <div class="d-flex flex-column flex-grow-1 info overflow-hidden">
           <span>{name}</span>

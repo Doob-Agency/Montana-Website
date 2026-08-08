@@ -130,7 +130,7 @@ export default () => {
         }}
       >
         <img
-          src="/assets/home/logo.svg"
+          src={process.env.PUBLIC_URL + "/assets/home/logo.svg"}
           alt="Montana Logo"
           style={{ maxHeight: "95px" }}
         />

@@ -1,13 +1,12 @@
 <!doctype html>
-<html lang="en" style="--img-aspect-ratio: 12 / 9">
+<html lang="ar" dir="rtl" style="--img-aspect-ratio: 12 / 9">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1" /> -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
+    <!-- Pinch-zoom stays enabled: locking it out fails WCAG 1.4.4, and a fair
+         share of the people ordering cakes here need to zoom to read a price. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -61,11 +60,9 @@
     <meta name="twitter:url" content="https://montana.sa" />
     <!-- Language (optional) -->
     <meta http-equiv="content-language" content="ar" />
-    <!-- Cache Control (rarely used today) -->
-    <meta
-      http-equiv="Cache-Control"
-      content="no-cache, no-store, must-revalidate"
-    />
+    <!-- Caching is set by public/.htaccess: no-store for this document, and a
+         one-year immutable policy for the hashed build assets. A meta tag here
+         cannot do that, and most browsers ignore it. -->
   </head>
   <body dir="rtl">
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -125,8 +122,8 @@
         }
       </style>
       <img
-        src="/assets/home/logo.svg"
-        alt="loader animation"
+        src="%PUBLIC_URL%/assets/home/logo.svg"
+        alt="جارٍ تحميل موقع حلويات مونتانا"
         style="max-height: 212px"
       />
     </aside>

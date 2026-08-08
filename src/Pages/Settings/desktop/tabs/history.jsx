@@ -236,7 +236,7 @@ function Stars({ count }) {
       <li>
         <img
           src={
-            "/assets/" + (count >= 1 ? "star-active" : "star-outlined") + ".svg"
+            process.env.PUBLIC_URL + "/assets/" + (count >= 1 ? "star-active" : "star-outlined") + ".svg"
           }
           alt="star"
         />
@@ -244,7 +244,7 @@ function Stars({ count }) {
       <li>
         <img
           src={
-            "/assets/" + (count >= 2 ? "star-active" : "star-outlined") + ".svg"
+            process.env.PUBLIC_URL + "/assets/" + (count >= 2 ? "star-active" : "star-outlined") + ".svg"
           }
           alt="star"
         />
@@ -252,7 +252,7 @@ function Stars({ count }) {
       <li>
         <img
           src={
-            "/assets/" + (count >= 3 ? "star-active" : "star-outlined") + ".svg"
+            process.env.PUBLIC_URL + "/assets/" + (count >= 3 ? "star-active" : "star-outlined") + ".svg"
           }
           alt="star"
         />
@@ -260,7 +260,7 @@ function Stars({ count }) {
       <li>
         <img
           src={
-            "/assets/" + (count >= 4 ? "star-active" : "star-outlined") + ".svg"
+            process.env.PUBLIC_URL + "/assets/" + (count >= 4 ? "star-active" : "star-outlined") + ".svg"
           }
           alt="star"
         />
@@ -268,7 +268,7 @@ function Stars({ count }) {
       <li>
         <img
           src={
-            "/assets/" + (count >= 5 ? "star-active" : "star-outlined") + ".svg"
+            process.env.PUBLIC_URL + "/assets/" + (count >= 5 ? "star-active" : "star-outlined") + ".svg"
           }
           alt="star"
         />

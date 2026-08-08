@@ -25,7 +25,7 @@ export default function main() {
             className="align-items-center d-flex flex-column gap-3 p-3 justify-content-center h-100"
             to="/settings/addresses"
           >
-            <img src="/assets/settings/address.png" alt="Icon" />
+            <img src={process.env.PUBLIC_URL + "/assets/settings/address.png"} alt="Icon" />
             {getText(24)}
           </Link>
         </li>
@@ -35,7 +35,7 @@ export default function main() {
             className="align-items-center d-flex flex-column gap-3 p-3 justify-content-center h-100"
             to="/settings/history"
           >
-            <img src="/assets/settings/delivery.png" alt="Icon" />
+            <img src={process.env.PUBLIC_URL + "/assets/settings/delivery.png"} alt="Icon" />
             {getText(25)}
           </Link>
         </li>
@@ -45,7 +45,7 @@ export default function main() {
             className="align-items-center d-flex flex-column gap-3 p-3 justify-content-center h-100"
             to="/settings/fav"
           >
-            <img src="/assets/settings/shop.png" alt="Icon" />
+            <img src={process.env.PUBLIC_URL + "/assets/settings/shop.png"} alt="Icon" />
             {getText(26)}
           </Link>
         </li>
@@ -55,7 +55,7 @@ export default function main() {
             className="align-items-center d-flex flex-column gap-3 p-3 justify-content-center h-100"
             to="/settings/wallet"
           >
-            <img src="/assets/settings/wallet.png" alt="Icon" />
+            <img src={process.env.PUBLIC_URL + "/assets/settings/wallet.png"} alt="Icon" />
             {getText(27)}
           </Link>
         </li>
@@ -65,7 +65,7 @@ export default function main() {
             className="align-items-center d-flex flex-column gap-3 p-3 justify-content-center h-100"
             to="/settings/account"
           >
-            <img src="/assets/settings/gears.png" alt="Icon" />
+            <img src={process.env.PUBLIC_URL + "/assets/settings/gears.png"} alt="Icon" />
             {getText(28)}
           </Link>
         </li>
@@ -75,7 +75,7 @@ export default function main() {
             className="align-items-center d-flex flex-column gap-3 p-3 justify-content-center h-100"
             to="/about-us"
           >
-            <img src="/assets/settings/address.png" alt="Icon" />
+            <img src={process.env.PUBLIC_URL + "/assets/settings/address.png"} alt="Icon" />
             {getText(29)}
           </Link>
         </li>

@@ -64,7 +64,7 @@ function AddressItem(
       className="px-2 d-flex justify-content-between align-items-center gap-2"
     >
       <label className="align-items-center d-flex gap-2 py-2">
-        <img src="/assets/settings/address.png" alt="Icon" />
+        <img src={process.env.PUBLIC_URL + "/assets/settings/address.png"} alt="Icon" />
 
         <div
           className="d-flex flex-column flex-grow-1 m-0"

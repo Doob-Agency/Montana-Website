@@ -57,7 +57,7 @@ function rateItem({ author, rate, comment }, I) {
 }
 
 function starIcon(isActive, I) {
-  const iconPath = "/assets/home/icons/",
+  const iconPath = process.env.PUBLIC_URL + "/assets/home/icons/",
     iconName = (isActive ? "" : "blank-") + "star.svg";
 
   return <img key={I + iconName} src={iconPath + iconName} alt={iconName} />;

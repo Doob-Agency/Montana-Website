@@ -13,6 +13,7 @@ import isMobileView from "../shared/isMobile.js";
 import store from "../store";
 import getPage, { getActiveLang } from "../translation.js";
 import pageMap from "./pageMap.js";
+import BASE, { routePath } from "../basePath.js";
 
 import About from "./About.jsx";
 import Alerts from "./Alerts";
@@ -104,7 +105,7 @@ let pageTitles = null;
 
 export default (
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={BASE}>
       <Provider store={store}>
         <App />
       </Provider>
@@ -122,7 +123,7 @@ function App() {
     showPopup = !storeDefined && location.pathname !== "/restaurant";
 
   !titlesLoaded &&
-    fetch("/assets/page-title.json")
+    fetch(process.env.PUBLIC_URL + "/assets/page-title.json")
       .then((r) => r.json())
       .then((r) => {
         pageTitles = r;
@@ -313,7 +314,7 @@ function Popups() {
 }
 
 function setDocTitle(appSettings) {
-  const docPath = window.location.pathname;
+  const docPath = routePath();
   seoTags.forEach((data) =>
     updateMetaElData(data, appSettings[data.contentKey]),
   );

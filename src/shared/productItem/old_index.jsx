@@ -52,7 +52,7 @@ export default function (item, I) {
       }}
     >
       <video
-        src={process.env.REACT_APP_API_URL + "/assets/heart.mp4"}
+        src={process.env.REACT_APP_API_URL + process.env.PUBLIC_URL + "/assets/heart.mp4"}
         style={{ maxHeight: "84px", marginLeft: "-17px" }}
         ref={handleFav}
       ></video>
@@ -137,7 +137,7 @@ export default function (item, I) {
 
           <div className="align-items-center d-grid gap-1 rate">
             <object
-              data="/assets/home/icons/star.svg"
+              data={process.env.PUBLIC_URL + "/assets/home/icons/star.svg"}
               type="image/svg+xml"
             ></object>
 
@@ -168,7 +168,7 @@ export default function (item, I) {
           <span className="d-flex align-items-center justify-content-center text-capitalize">
             {getText(4)}
           </span>
-          <img src="/assets/home/icons/mdi-light_cart.svg" alt="Cart" />
+          <img src={process.env.PUBLIC_URL + "/assets/home/icons/mdi-light_cart.svg"} alt="Cart" />
         </button>
       </div>
     </div>

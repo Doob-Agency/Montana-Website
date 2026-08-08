@@ -43,7 +43,7 @@ export default function () {
           >
             <li className="align-items-center d-flex gap-2 mb-4">
               <img
-                src="/assets/settings/avatar.png"
+                src={process.env.PUBLIC_URL + "/assets/settings/avatar.png"}
                 alt="avatar"
                 style={{ maxHeight: "54px" }}
               />
@@ -65,7 +65,7 @@ export default function () {
                 className="align-items-center d-grid gap-2 text-decoration-none"
                 to="/settings/addresses"
               >
-                <img src="/assets/settings/address.png" alt="Icon" />
+                <img src={process.env.PUBLIC_URL + "/assets/settings/address.png"} alt="Icon" />
                 {getText(0)}
               </NavLink>
             </li>
@@ -75,7 +75,7 @@ export default function () {
                 className="align-items-center d-grid gap-2 text-decoration-none"
                 to="/settings/history"
               >
-                <img src="/assets/settings/delivery.png" alt="Icon" />
+                <img src={process.env.PUBLIC_URL + "/assets/settings/delivery.png"} alt="Icon" />
                 {getText(1)}
               </NavLink>
             </li>
@@ -85,7 +85,7 @@ export default function () {
                 className="align-items-center d-grid gap-2 text-decoration-none"
                 to="/settings/fav"
               >
-                <img src="/assets/settings/shop.png" alt="Icon" />
+                <img src={process.env.PUBLIC_URL + "/assets/settings/shop.png"} alt="Icon" />
                 {getText(2)}
               </NavLink>
             </li>
@@ -95,7 +95,7 @@ export default function () {
                 className="align-items-center d-grid gap-2 text-decoration-none"
                 to="/settings/wallet"
               >
-                <img src="/assets/settings/wallet.png" alt="Icon" />
+                <img src={process.env.PUBLIC_URL + "/assets/settings/wallet.png"} alt="Icon" />
                 {getText(3)}
               </NavLink>
             </li>
@@ -105,7 +105,7 @@ export default function () {
                 className="align-items-center d-grid gap-2 text-decoration-none"
                 to="/settings/account"
               >
-                <img src="/assets/settings/gears.png" alt="Icon" />
+                <img src={process.env.PUBLIC_URL + "/assets/settings/gears.png"} alt="Icon" />
                 {getText(4)}
               </NavLink>
             </li>

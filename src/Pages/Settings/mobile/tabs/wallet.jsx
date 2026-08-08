@@ -32,7 +32,7 @@ export default function () {
               "text-align: center; background-color: #fffdf4; border-radius: 16px",
           }}
         >
-          <img src="/assets/settings/guy.png" alt="guy sending" />
+          <img src={process.env.PUBLIC_URL + "/assets/settings/guy.png"} alt="guy sending" />
         </div>
 
         <div
@@ -42,7 +42,7 @@ export default function () {
               "border: 1px solid #fffdf4; color: var(--primary); font-weight: 700; font-size: large;",
           }}
         >
-          <img src="/assets/settings/coins.png" alt="coins" />
+          <img src={process.env.PUBLIC_URL + "/assets/settings/coins.png"} alt="coins" />
           <span className="flex-grow-1">
             <CurrencySymbol />
           </span>
@@ -72,7 +72,7 @@ export default function () {
                   "color: var(--midgray); border: 1px solid #FFCD00; border-radius: 8px; max-width: 584px; background-color: #fbfbfb;",
               }}
             >
-              <img src="/assets/settings/delivery.png" alt="delevery" />
+              <img src={process.env.PUBLIC_URL + "/assets/settings/delivery.png"} alt="delevery" />
               <span
                 className="h5 m-0"
                 style={{ cssText: "color: var(--primary);" }}
@@ -91,7 +91,7 @@ export default function () {
                   "color: var(--midgray); border: 1px solid #FFCD00; border-radius: 8px; max-width: 584px; background-color: #fbfbfb;",
               }}
             >
-              <img src="/assets/settings/wallet.png" alt="delevery" />
+              <img src={process.env.PUBLIC_URL + "/assets/settings/wallet.png"} alt="delevery" />
               <span
                 className="h5 m-0"
                 style={{ cssText: "color: var(--primary);" }}

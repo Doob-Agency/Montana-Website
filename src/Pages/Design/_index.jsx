@@ -52,7 +52,7 @@ function Form() {
   return (
     <form className="d-flex flex-wrap gap-3" encType="multipart/form-data">
       <div className="align-items-center d-flex flex-column gap-4 justify-content-around">
-        <img id="img-preview" src="/assets/home/img-placeholder.png" alt="PH" />
+        <img id="img-preview" src={process.env.PUBLIC_URL + "/assets/home/img-placeholder.png"} alt="PH" />
         <input
           onChange={handleChange}
           id="img-file"

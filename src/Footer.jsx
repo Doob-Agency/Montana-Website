@@ -25,7 +25,7 @@ export default function () {
           <div className="col-3 d-flex flex-column">
             <img
               className="mb-3"
-              src="/assets/home/logo-white.svg"
+              src={process.env.PUBLIC_URL + "/assets/home/logo-white.svg"}
               alt="logo"
             />
             {getText(0)}

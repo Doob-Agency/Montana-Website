@@ -47,17 +47,17 @@ export default () => {
         className="d-flex flex-no-wrap text-center w-100 mt-5"
       >
         <div className="d-flex flex-column">
-          <img src="/assets/home/icons/ph_stamp-light.svg" alt="LIGHT" />
+          <img src={process.env.PUBLIC_URL + "/assets/home/icons/ph_stamp-light.svg"} alt="LIGHT" />
           <Inc curr={count} until={75} />
           {getText(2)}
         </div>
         <div className="d-flex flex-column">
-          <img src="/assets/home/icons/hugeicons_happy.svg" alt="HAPPY FACE" />
+          <img src={process.env.PUBLIC_URL + "/assets/home/icons/hugeicons_happy.svg"} alt="HAPPY FACE" />
           <Inc curr={count} until={32000} />
           {getText(3)}
         </div>
         <div className="d-flex flex-column">
-          <img src="/assets/home/icons/bi_cake.svg" alt="CAKE" />
+          <img src={process.env.PUBLIC_URL + "/assets/home/icons/bi_cake.svg"} alt="CAKE" />
           <Inc curr={count} until={15000} />
           {getText(4)}
         </div>

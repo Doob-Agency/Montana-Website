@@ -12,7 +12,7 @@ filteration.titles = { data: new Set() };
 filteration.areas = { data: new Set() };
 filteration.experience = { data: new Set() };
 
-const nationsReq = fetch("/assets/nationalities.json").then((r) => r.json());
+const nationsReq = fetch(process.env.PUBLIC_URL + "/assets/nationalities.json").then((r) => r.json());
 
 export default function () {
   const params = useParams(),
@@ -68,7 +68,7 @@ function JobDetails({ id }) {
       <section
         style={{
           backgroundColor: "#f5faff",
-          backgroundImage: 'url("/assets/jobs/circle.png")',
+          backgroundImage: 'url(process.env.PUBLIC_URL + "/assets/jobs/circle.png")',
           backgroundRepeat: "no-repeat",
           color: "#848b94",
         }}
@@ -78,7 +78,7 @@ function JobDetails({ id }) {
             className="align-items-center d-flex gap-2 justify-content-center m-0"
             style={{ color: "var(--primary)", fontWeight: "500" }}
           >
-            <img src="/assets/jobs/case.png" alt="case" />
+            <img src={process.env.PUBLIC_URL + "/assets/jobs/case.png"} alt="case" />
             <span
               className="pb-1"
               style={{ borderBottom: "2px solid currentColor" }}
@@ -123,7 +123,7 @@ function JobDetails({ id }) {
         onSubmit={formSubmit}
       >
         <h5 className="align-items-center d-flex gap-1 h5 justify-content-center m-0">
-          <img src="/assets/jobs/User.png" alt="user" />
+          <img src={process.env.PUBLIC_URL + "/assets/jobs/User.png"} alt="user" />
           <span
             className="pb-2"
             style={{ borderBottom: "2px solid currentColor" }}
@@ -344,7 +344,7 @@ function JobDetails({ id }) {
       >
         <div className="align-items-center d-flex flex-column gap-2 py-3">
           <img
-            src="/assets/jobs/success.png"
+            src={process.env.PUBLIC_URL + "/assets/jobs/success.png"}
             alt="success"
             style={{ maxWidth: "45px" }}
           />
@@ -435,7 +435,7 @@ function FileUpload({ fileRef }) {
             }}
           >
             <img
-              src="/assets/jobs/Delete.png"
+              src={process.env.PUBLIC_URL + "/assets/jobs/Delete.png"}
               alt="delete"
               onClick={() => setFileData(null)}
             />
@@ -491,7 +491,7 @@ function FileUpload({ fileRef }) {
             }}
           >
             <img
-              src="/assets/jobs/upload.png"
+              src={process.env.PUBLIC_URL + "/assets/jobs/upload.png"}
               style={{ maxWidth: "40px" }}
               alt="upload"
             />
@@ -535,7 +535,7 @@ function Main() {
               border: "1px solid aliceblue",
             }}
           >
-            <img src="/assets/jobs/search.png" alt="search" />
+            <img src={process.env.PUBLIC_URL + "/assets/jobs/search.png"} alt="search" />
             <input
               type="search"
               className="form-control"
@@ -610,7 +610,7 @@ function Filter({ container, title }) {
           ref={(e) =>
             e && (e.style.transform = "rotate(" + (expanded ? 0 : 180) + "deg)")
           }
-          src="/assets/jobs/arrow.png"
+          src={process.env.PUBLIC_URL + "/assets/jobs/arrow.png"}
           alt="arrow"
         />
       </label>
@@ -707,7 +707,7 @@ function JobItem({ id, title, created_at, is_active }, searchStr) {
         style={{ color: "#999", fontSize: "smaller" }}
       >
         <div className="align-items-center d-flex gap-2">
-          <img src="/assets/jobs/location.png" alt="location" />
+          <img src={process.env.PUBLIC_URL + "/assets/jobs/location.png"} alt="location" />
           <span>{"حي الصفا"}</span>
         </div>
 
