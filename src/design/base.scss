@@ -1,0 +1,346 @@
+/**
+ * Site-wide chrome.
+ *
+ * The homepage was rebuilt component by component, but the rest of the site is
+ * several thousand lines of working order/payment logic that is not worth
+ * rewriting to change how it looks. This file restyles the markup those pages
+ * already emit — Bootstrap buttons, bare inputs, headings, panels — so every
+ * screen reads as one product while its behaviour stays untouched.
+ *
+ * Everything is scoped under `main`, `footer` or `nav` so it cannot leak into
+ * the order bar or the homepage, which style themselves.
+ */
+
+main {
+  background: var(--mt-ground);
+  color: var(--mt-ink);
+}
+
+main h1,
+main h2,
+main h3,
+main h4,
+main h5,
+main h6 {
+  color: var(--mt-ink);
+  font-weight: 700;
+}
+
+/* Section titles on inner pages: the old rule only coloured them on the
+   homepage, so every other page had near-black headings. */
+main > section > h2:first-child,
+main > div > section > h2:first-child {
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  font-weight: 800;
+  margin-bottom: var(--mt-4);
+}
+
+/* --- controls ----------------------------------------------------------- */
+
+main .btn {
+  border-radius: var(--mt-r-pill);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding-inline: 1.1rem;
+  transition: filter var(--mt-ease);
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+}
+
+/* The old palette used Bootstrap's default blue for primary actions, which is
+   not a Montana colour. */
+main .btn-primary,
+main .btn-dark {
+  background-color: var(--mt-navy);
+  border-color: var(--mt-navy);
+  color: #fff;
+}
+
+main .btn-warning,
+main .btn-secondary[data-role="primary"] {
+  background-color: var(--mt-yellow);
+  border-color: var(--mt-yellow);
+  color: var(--mt-navy);
+}
+
+main .btn-outline-primary {
+  border-color: var(--mt-navy);
+  color: var(--mt-navy);
+
+  &:hover {
+    background-color: var(--mt-navy);
+    color: #fff;
+  }
+}
+
+main input:not([type="radio"]):not([type="checkbox"]):not([type="range"]),
+main select,
+main textarea {
+  border: 1px solid var(--mt-line);
+  border-radius: var(--mt-r-sm);
+  background: var(--mt-surface);
+  color: var(--mt-ink);
+  padding: 0.55rem 0.8rem;
+  font: inherit;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color var(--mt-ease);
+
+  &::placeholder {
+    color: var(--mt-muted);
+  }
+
+  &:focus {
+    border-color: var(--mt-navy);
+  }
+}
+
+main label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mt-ink-2);
+}
+
+/* Accent the native controls instead of leaving them browser-blue. */
+main input[type="radio"],
+main input[type="checkbox"] {
+  accent-color: var(--mt-navy);
+  width: 17px;
+  height: 17px;
+}
+
+/* A visible focus ring on every interactive thing — the site had none, so
+   keyboard users had no idea where they were. */
+main :focus-visible,
+footer :focus-visible,
+body > nav :focus-visible {
+  outline: 2px solid var(--mt-yellow);
+  outline-offset: 2px;
+  border-radius: var(--mt-r-sm);
+}
+
+/* --- page primitives ---------------------------------------------------- */
+
+.mt-page {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: var(--mt-band) clamp(14px, 3vw, 28px) var(--mt-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-5);
+}
+
+.mt-page__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-1);
+
+  h1 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 800;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    color: var(--mt-muted);
+    font-size: 0.9rem;
+  }
+}
+
+.mt-panel {
+  background: var(--mt-surface);
+  border: 1px solid var(--mt-line);
+  border-radius: var(--mt-r-md);
+  padding: var(--mt-4);
+}
+
+/* Empty and error states: the site used to render nothing at all, which is
+   indistinguishable from a page that failed to load. */
+.mt-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mt-3);
+  text-align: center;
+  padding: var(--mt-7) var(--mt-4);
+  background: var(--mt-surface);
+  border: 1px dashed var(--mt-line);
+  border-radius: var(--mt-r-lg);
+
+  h2 {
+    font-size: 1.05rem;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    color: var(--mt-muted);
+    font-size: 0.88rem;
+    max-width: 46ch;
+  }
+}
+
+.mt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mt-1);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--mt-r-pill);
+  border: 1px solid var(--mt-line);
+  background: var(--mt-surface);
+  color: var(--mt-ink-2);
+  cursor: pointer;
+  transition: all var(--mt-ease);
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--mt-navy);
+  }
+
+  &[aria-pressed="true"],
+  &.is-active {
+    background: var(--mt-navy);
+    border-color: var(--mt-navy);
+    color: #fff;
+  }
+}
+
+/* --- footer ------------------------------------------------------------- */
+
+footer {
+  background: var(--mt-navy-deep) !important;
+  border-top: 0 !important;
+  color: #b9d0e1;
+  font-size: 0.85rem;
+}
+
+.mt-foot {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: clamp(14px, 3vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-5);
+
+  &__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--mt-5);
+  }
+
+  &__brand img {
+    width: 130px;
+    margin-bottom: var(--mt-3);
+  }
+
+  h2 {
+    color: #fff !important;
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin: 0 0 var(--mt-3);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--mt-2);
+  }
+
+  a {
+    color: #b9d0e1;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--mt-2);
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  &__pay {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--mt-3);
+    padding-block: var(--mt-4);
+    border-block: 1px solid rgba(255, 255, 255, 0.12);
+
+    img {
+      height: 26px;
+      width: auto;
+      background: #fff;
+      border-radius: 4px;
+      padding: 3px 6px;
+    }
+  }
+
+  /* Commercial registration and VAT number are a legal requirement on a Saudi
+     storefront. They were in the markup but hidden behind `d-none`. */
+  &__legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--mt-3) var(--mt-5);
+    font-size: 0.78rem;
+    color: #8fb3cc;
+
+    span {
+      font-variant-numeric: tabular-nums;
+    }
+
+    b {
+      color: #dbe8f2;
+      font-weight: 600;
+    }
+  }
+
+  &__store {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mt-2);
+
+    a {
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: var(--mt-r-sm);
+      padding: 0.45rem 0.8rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #fff;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+  }
+}
+
+/* --- mobile tab bar ----------------------------------------------------- */
+
+body#mobile > nav {
+  background: var(--mt-surface);
+  border-top: 1px solid var(--mt-line);
+  filter: none;
+  box-shadow: 0 -2px 12px rgba(8, 41, 63, 0.06);
+
+  ul > li > a {
+    color: var(--mt-muted);
+    font-weight: 600;
+
+    &.active {
+      color: var(--mt-navy);
+
+      > div {
+        background-color: var(--mt-navy);
+      }
+    }
+  }
+}

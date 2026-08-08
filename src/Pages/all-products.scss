@@ -1,0 +1,94 @@
+/* Catalogue layout — see All_Products.jsx */
+
+.mt-catalogue {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: var(--mt-5);
+  align-items: start;
+
+  &__results {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .mt-catalogue {
+    grid-template-columns: 1fr;
+    gap: var(--mt-4);
+  }
+}
+
+.mt-filters {
+  position: sticky;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-4);
+  background: var(--mt-surface);
+  border: 1px solid var(--mt-line);
+  border-radius: var(--mt-r-md);
+  padding: var(--mt-4);
+
+  &__search input {
+    width: 100%;
+  }
+
+  &__group h2 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--mt-muted);
+    margin: 0 0 var(--mt-3);
+    text-transform: uppercase;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mt-2);
+  }
+
+  &__clear {
+    align-self: flex-start;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--mt-off);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+  }
+}
+
+/* On phones the panel stops being a sidebar and stops sticking, otherwise it
+   eats a third of the screen above the results. */
+@media (max-width: 900px) {
+  .mt-filters {
+    position: static;
+  }
+
+  .mt-filters__chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: var(--mt-1);
+
+    > * {
+      flex: none;
+    }
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

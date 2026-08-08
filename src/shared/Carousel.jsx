@@ -1,5 +1,12 @@
 /* eslint-disable import/no-anonymous-default-export */
 import { Swiper, SwiperSlide } from "swiper/react";
+/**
+ * Swiper's stylesheet belongs with the component that needs it, not with
+ * whichever page happened to import it first. It used to be pulled in by the
+ * homepage, so rebuilding that page silently unstyled every carousel on the
+ * site — slides stacked vertically and the cart page grew to 60,000px tall.
+ */
+import "swiper/css/bundle";
 import {
   Autoplay,
   Navigation,

@@ -1,48 +1,38 @@
+/**
+ * Catalogue — direction B.
+ *
+ * This is where the header search lands and where every category chip points,
+ * so it is the busiest page after the homepage. It now shares the homepage's
+ * product card, filters read as chips rather than a bare list, and the result
+ * count is stated so an empty result reads as "nothing matched" instead of a
+ * page that failed to load.
+ */
 /* eslint-disable import/no-anonymous-default-export */
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import staticCategories from "./Home/Departments/data.json";
-import ProductItem from "../shared/productItem";
 import { useParams, useSearchParams } from "react-router-dom";
+import ProductCard from "./Home/ProductCard";
 import getPage from "../translation";
-import Box from "@mui/material/Box";
-import Skeleton from "@mui/material/Skeleton";
+import "./all-products.scss";
 
 export const ordinaryCategories = [1, 2, 3, 4, 5, 6, 7];
 
-const miniCategories = staticCategories.map((i) => i.title),
-  getText = getPage("allProducts"),
-  emptyStr = "",
-  liStyle = {
-    color: "var(--midgray)",
-    border: "1px solid currentColor",
-    borderRadius: "6px",
-    cursor: "pointer",
-    backgroundColor: "#f8f9fa",
-    fontWeight: "500",
-    letterSpacing: "0.8px",
-    transition: "all 0.15s",
-  },
-  activeCatStyle = {
-    ...liStyle,
-    color: "var(--primary)",
-    borderColor: "#ecf5ff",
-  };
+const getText = getPage("allProducts"),
+  emptyStr = "";
 
 export default function () {
   const urlParams = useParams(),
     urlCat = urlParams.category || emptyStr,
-    { data } = useSelector((e) => e.Products),
-    [productName, setProductName] = useState(emptyStr),
+    { data, loaded } = useSelector((e) => e.Products),
+    [params] = useSearchParams();
+
+  const [productName, setProductName] = useState(emptyStr),
     [category, setCategory] = useState(urlCat);
 
-  const [params] = useSearchParams();
-  const [loaded, setLoaded] = useState(false);
-
-  // The header search lands here with ?q=…; seed the filter from it so the
-  // result page opens on the term rather than the full catalogue.
-  const queryParam = params.get("q") || emptyStr;
-  const [seededQuery, setSeededQuery] = useState(emptyStr);
+  // The header search arrives as ?q=…; seed the filter from it so the page
+  // opens on the term instead of the whole catalogue.
+  const queryParam = params.get("q") || emptyStr,
+    [seededQuery, setSeededQuery] = useState(emptyStr);
 
   if (queryParam && queryParam !== seededQuery) {
     setSeededQuery(queryParam);
@@ -50,127 +40,141 @@ export default function () {
   }
 
   const viewOccassions = params.has("occassions"),
-    excludedCategories = data.filter(
-      (i) =>
-        params.has("occassions") !==
-        ordinaryCategories.includes(i.item_category_id),
-    ),
-    availCategories = new Set(),
-    items = excludedCategories.map((item, index) => {
-      const categoryMatched = item.category_name.includes(category),
-        nameExp = new RegExp(productName, "i"),
-        nameMatched = nameExp.test(item.name) || nameExp.test(item.name_ar);
-      availCategories.add(item.category_name);
-      if (categoryMatched && nameMatched) return ProductItem(item, index);
-      return false;
-    });
+    // A search from the header means "find this anywhere", so it looks across
+    // the whole catalogue. Scoping it the way browsing is scoped made searching
+    // "تخرج" return nothing at all, because the graduation cakes sit outside
+    // the ordinary categories this page normally lists.
+    searching = productName.trim().length > 0,
+    scoped = searching
+      ? data
+      : data.filter(
+          (i) => viewOccassions !== ordinaryCategories.includes(i.item_category_id),
+        );
 
-  if (data.length && !loaded) {
-    setTimeout(() => setLoaded(true), 1000);
-  }
+  const availCategories = new Set();
+  scoped.forEach((i) => availCategories.add(i.category_name));
 
-  const targetCategories = Array.from(availCategories);
-  //  (
-  //   params.has("miniCategories") ? miniCategories : categories
-  // ).filter((c) => !customCategoriesExp.test(c));
+  const nameExp = new RegExp(escapeForSearch(productName), "i"),
+    matches = scoped.filter(
+      (item) =>
+        item.category_name.includes(category) &&
+        (nameExp.test(item.name) || nameExp.test(item.name_ar || emptyStr)),
+    );
+
+  const heading = urlCat || getText(viewOccassions ? 3 : 2);
 
   return (
-    <section
-      id="products"
-      className="container d-flex flex-column flex-lg-row-reverse gap-5"
-    >
-      {(!viewOccassions || (viewOccassions && !urlParams.category)) && (
-        <div style={{ width: "100%", height: "fit-content" }}>
-          <input
-            type="search"
-            placeholder={getText(0)}
-            value={productName}
-            onChange={({ target }) => setProductName(target.value)}
-            className="input-group-text m-0 w-100"
-            style={{ outline: "none", borderColor: "#ecf5ff" }}
-          />
+    <div className="mt-page mt-scope">
+      <header className="mt-page__head">
+        <h1>{heading}</h1>
+        <p>
+          {loaded
+            ? `${matches.length} من ${scoped.length} صنف`
+            : "جارٍ تحميل القائمة…"}
+        </p>
+      </header>
 
-          <h5
-            className="my-2 py-1"
-            style={{
-              color: "var(--primary)",
-              borderBottom: "1px solid currentColor",
-            }}
-          >
-            {getText(1)}
-          </h5>
+      <div className="mt-catalogue">
+        <aside className="mt-filters">
+          <label className="mt-filters__search">
+            <span className="visually-hidden">{getText(0)}</span>
+            <input
+              type="search"
+              placeholder={getText(0)}
+              value={productName}
+              onChange={({ target }) => setProductName(target.value)}
+            />
+          </label>
 
-          <ul
-            className="d-grid gap-3 text-center justify-content-center list-unstyled m-0 p-0"
-            style={{ gridTemplateColumns: "1fr 1fr" }}
-          >
-            {Array.from(targetCategories).map((c) => (
-              <li
-                key={c}
-                className="px-3 py-1"
-                onClick={() => setCategory(category === c ? emptyStr : c)}
-                style={c === category ? activeCatStyle : liStyle}
+          <div className="mt-filters__group">
+            <h2>{getText(1)}</h2>
+            <div className="mt-filters__chips">
+              <button
+                type="button"
+                className="mt-chip"
+                aria-pressed={category === emptyStr}
+                onClick={() => setCategory(emptyStr)}
               >
-                {c}
-              </li>
-            ))}
-          </ul>
+                الكل
+              </button>
 
-          {/* <h5
-          className="my-2 py-1"
-          style={{
-            color: "var(--primary)",
-            borderBottom: "1px solid currentColor",
-          }}
-        >
-          {"تصاميم جاهزة لكل مناسبة"}
-        </h5> */}
+              {Array.from(availCategories).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className="mt-chip"
+                  aria-pressed={c === category}
+                  onClick={() => setCategory(category === c ? emptyStr : c)}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(productName || category) && (
+            <button
+              type="button"
+              className="mt-filters__clear"
+              onClick={() => {
+                setProductName(emptyStr);
+                setCategory(emptyStr);
+              }}
+            >
+              مسح الفلاتر
+            </button>
+          )}
+        </aside>
+
+        <div className="mt-catalogue__results">
+          {!loaded ? (
+            <div className="mt-grid">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="mt-card">
+                  <div className="mt-card__media mt-skeleton" />
+                  <div className="mt-card__body">
+                    <span className="mt-skeleton" style={{ height: 14 }} />
+                    <span className="mt-skeleton" style={{ height: 10, width: "55%" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : matches.length ? (
+            <div className="mt-grid">
+              {matches.map((item) => (
+                <ProductCard key={item.id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-empty">
+              <h2>لا يوجد صنف بهذا الوصف</h2>
+              <p>
+                {productName
+                  ? `لم نجد نتائج لـ «${productName}» في هذا الفرع. جرّب كلمة أقصر أو امسح الفلاتر.`
+                  : "لا توجد أصناف في هذا القسم داخل الفرع المختار. جرّب فرعاً آخر من الأعلى."}
+              </p>
+              <button
+                type="button"
+                className="mt-btn mt-btn--dark"
+                onClick={() => {
+                  setProductName(emptyStr);
+                  setCategory(emptyStr);
+                }}
+              >
+                عرض كل الأصناف
+              </button>
+            </div>
+          )}
         </div>
-      )}
-
-      <div
-        className="d-grid d-md-flex flex-wrap gap-4"
-        style={{
-          flex: "1 0 70%",
-          gridTemplateColumns: "1fr 1fr",
-        }}
-      >
-        {params.has("occassions") && (
-          <>
-            <h3 style={{ width: "100%", color: "var(--primary)" }}>{urlCat}</h3>
-            <span className="d-lg-none"></span>
-          </>
-        )}
-        {loaded ? (
-          items
-        ) : (
-          <>
-            <Box sx={{ pt: 0.5 }}>
-              <Skeleton variant="rectangular" width={210} height={118} />
-              <Skeleton />
-              <Skeleton width="60%" />
-            </Box>
-
-            <Box sx={{ pt: 0.5 }}>
-              <Skeleton variant="rectangular" width={210} height={118} />
-              <Skeleton />
-              <Skeleton width="60%" />
-            </Box>
-
-            <Box sx={{ pt: 0.5 }}>
-              <Skeleton variant="rectangular" width={210} height={118} />
-              <Skeleton width={210} />
-              <Skeleton width="60%" />
-            </Box>
-
-            <Box sx={{ pt: 0.5 }}>
-              <Skeleton variant="rectangular" width={210} height={118} />
-              <Skeleton width={210} />
-              <Skeleton width="60%" />
-            </Box>
-          </>
-        )}
       </div>
-    </section>
+    </div>
   );
+}
+
+/**
+ * The term goes straight into a RegExp, so an unbalanced bracket typed into the
+ * search box used to throw and blank the page.
+ */
+function escapeForSearch(term) {
+  return term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
