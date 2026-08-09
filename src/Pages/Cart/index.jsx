@@ -1,20 +1,28 @@
+/**
+ * Cart — direction B.
+ *
+ * One list of lines and one summary panel that stays in view while you edit, on
+ * both desktop and phone. It used to be two entirely separate renderings — a
+ * five-column grid on desktop, a different card list under 786px — kept in step
+ * by hand.
+ *
+ * The money is presented, not changed: subtotal, coupon, wallet and total use
+ * exactly the arithmetic that was here before, only labelled so it is clear
+ * which line is a discount and which is a balance.
+ */
 /* eslint-disable import/no-anonymous-default-export */
-import getPage from "../../translation";
-import React, { useLayoutEffect, useState } from "react";
-import { useSelector, useDispatch, useStore } from "react-redux";
+import { useLayoutEffect, useState } from "react";
+import { useDispatch, useSelector, useStore } from "react-redux";
 import { Link } from "react-router-dom";
-import NXT from "../../icons/NXT";
-import Recommended from "./Recommended";
+import getPage from "../../translation";
+import ProductCard from "../Home/ProductCard";
 import "./index.scss";
-import CurrencySymbol from "../../CurrencySymbol";
-
-const mobileView = window.matchMedia("(max-width: 786px)");
 
 const getText = getPage("cart"),
   isArabic = window.localStorage.getItem("lang") === "العربية",
-  nameTarget = isArabic ? "name_ar" : "name";
+  nameTarget = isArabic ? "name_ar" : "name",
+  baseUrl = process.env.REACT_APP_API_URL;
 
-const baseUrl = process.env.REACT_APP_API_URL;
 let couponData = null;
 
 export default function () {
@@ -24,40 +32,54 @@ export default function () {
     settings = store.settings.data,
     [err, setErr] = useState("");
 
-  let totalPrice = cart.reduce((n, i) => {
-    return n + i.price * i.quantity;
-  }, 0);
+  const totalPrice = cart.reduce((n, i) => n + i.price * i.quantity, 0);
 
   return (
-    <>
-      <CartCashback totalPrice={totalPrice} source={cashback} />
-      <CartCashback totalPrice={totalPrice} source={settings} />
+    <div className="mt-page mt-scope">
+      <header className="mt-page__head">
+        <h1>{getText(1)}</h1>
+        <p>
+          {cart.length
+            ? `${cart.length} صنف في سلتك`
+            : "سلتك فارغة في الوقت الحالي"}
+        </p>
+      </header>
+
+      <CashbackBar totalPrice={totalPrice} source={cashback} />
+      <CashbackBar totalPrice={totalPrice} source={settings} />
 
       {!!err && (
-        <span
-          className="d-block text-capitalize text-center text-danger w-100"
-          style={{ fontWeight: "600" }}
-        >
+        <p className="mt-cart__err" role="alert">
           {err}
-        </span>
+        </p>
       )}
 
       {cart.length ? (
-        <ItemsContainer {...{ cart, totalPrice, setErr, cashback, store }} />
+        <CartBody {...{ cart, totalPrice, setErr, cashback, store }} />
       ) : (
-        <div className="container d-flex justify-content-center my-3 overflow-hidden">
-          <img
-            className="animate-shake"
-            src={baseUrl + "/assets/img/various/cart-empty.png"}
-            style={{ maxHeight: 450 + "px" }}
-            alt="no items"
-          />
+        <div className="mt-empty">
+          <h2>سلتك فارغة</h2>
+          <p>
+            اختر ما يناسب مناسبتك من قائمة الفرع، أو صمّم كيكتك بنفسك بالحجم
+            والنكهة اللي تحبها.
+          </p>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <Link className="mt-btn mt-btn--primary" to="/all-products">
+              تصفّح المنتجات
+            </Link>
+            <Link className="mt-btn mt-btn--ghost" to="/design">
+              صمم كيكتك
+            </Link>
+          </div>
         </div>
       )}
+
       <Recommended items={data} />
-    </>
+    </div>
   );
 }
+
+/* ------------------------------------------------------------------ coupon */
 
 export function _useCoupon(params, auth, callback, rejectCallback) {
   if (+params.subtotal <= 0) {
@@ -79,294 +101,47 @@ export function _useCoupon(params, auth, callback, rejectCallback) {
     });
 }
 
-function ItemsContainer({ cart, totalPrice, setErr, cashback, store }) {
-  const discountController = useState(0);
-  const userWallet = +store.User.data.wallet_balance || 0;
-  const cashbackAmount = calcCashback(
-    totalPrice,
-    cashback,
-    store.settings.data,
-  );
+/* -------------------------------------------------------------------- body */
 
-  return (
-    <section
-      id="cart"
-      className="align-items-xl-start container d-flex flex-column flex-xl-row gap-3"
-    >
-      <ItemsList
-        {...{
-          cart,
-          restaurant: store.Restaurant,
-          discountController,
-          totalPrice,
-          userWallet,
-          setErr,
-        }}
-      />
-
-      <div className="d-grid gap-3 p-3">
-        <h5 className="h5 m-0 pb-2 text-center">{getText(12)}</h5>
-
-        <span>
-          <samp>{getText(13)}</samp>
-          <samp>
-            {totalPrice} <CurrencySymbol />
-          </samp>
-        </span>
-
-        <div className="d-grid gap-3 m-0 py-2">
-          <span className="total">
-            <samp>{getText(15)}</samp>
-            <samp>
-              {userWallet} <CurrencySymbol />
-            </samp>
-          </span>
-
-          <span>
-            <samp>{getText(16)}</samp>
-            <samp>
-              {discountController[0] === false
-                ? getText(17)
-                : -Math.abs(discountController[0]).toLocaleString("en-US") +
-                  " "}
-              {/* cashbackAmount + Math.abs(discountController[0]) */}
-
-              <CurrencySymbol />
-            </samp>
-          </span>
-        </div>
-
-        <span className="total">
-          <samp>{getText(18)}</samp>
-          <span style={{ marginInlineStart: "auto" }}>
-            {/* -cashbackAmount + */}
-            {Math.max(
-              0,
-              totalPrice - userWallet + +discountController[0],
-            ).toLocaleString("en-US") + " "}
-          </span>
-          <CurrencySymbol />
-        </span>
-
-        <Link className="btn" to="/checkout">
-          {getText(19)}
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-function ItemsList({
-  cart,
-  restaurant,
-  discountController,
-  totalPrice,
-  userWallet,
-  setErr,
-}) {
-  const store = useStore().getState(),
-    [discount, setDiscount] = discountController,
-    [isMobile, setMobileView] = useState(mobileView.matches),
+function CartBody({ cart, totalPrice, setErr, cashback, store }) {
+  const [discount, setDiscount] = useState(0),
     dispatch = useDispatch();
+
+  const userWallet = +store.User.data.wallet_balance || 0,
+    restaurant = store.Restaurant;
 
   let coupon = window.localStorage.getItem("coupon") || "";
   coupon === "" && (couponData = null);
 
   useLayoutEffect(() => {
-    mobileView.onchange = () => setMobileView(mobileView.matches);
-  }, []);
-
-  useLayoutEffect(() => {
     const token = window.localStorage.getItem("token");
     if (coupon !== "" && restaurant.loaded && cart.length) {
-      const couponParams = {
-        coupon,
-        restaurant_id: "" + restaurant.data.id,
-        subtotal: "" + (totalPrice - +userWallet),
-      };
-      _useCoupon(couponParams, token, applyCoupon, rejectCoupon);
+      _useCoupon(
+        {
+          coupon,
+          restaurant_id: "" + restaurant.data.id,
+          subtotal: "" + (totalPrice - +userWallet),
+        },
+        token,
+        applyCoupon,
+        rejectCoupon,
+      );
     } else if (token === undefined) setErr(getText(0));
     else couponData = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coupon, totalPrice, discount]);
 
-  if (isMobile) {
-    const items = cart.map((item, I) =>
-      MobileProductItem(item, I, editCartItem),
-    );
-
-    return (
-      <div style={{ border: "0" }}>
-        <ul className="d-flex flex-column gap-3 list-unstyled m-0 p-0">
-          {items}
-        </ul>
-
-        {couponData ? (
-          <div
-            className="d-flex justify-content-between mt-3 py-2"
-            style={{
-              backgroundColor: "aliceblue",
-              borderRadius: "16px",
-              fontWeight: "300",
-              paddingInlineStart: "12px",
-            }}
-          >
-            <p
-              className="d-flex flex-column gap-1 m-0"
-              style={{ textAlign: "start" }}
-            >
-              <h5 className="align-items-center d-flex gap-1 m-0">
-                {couponData.name}
-                <hr
-                  className="m-0"
-                  style={{
-                    border: "none",
-                    backgroundColor: "var(--primary)",
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "100%",
-                  }}
-                />
-                <sub style={{ color: "var(--primary)" }}>
-                  {couponData.count} {getText(9)}
-                </sub>
-              </h5>
-              {couponData.description}
-            </p>
-
-            <button
-              className="btn"
-              onClick={rejectCoupon}
-              style={{
-                backgroundColor: "transparent",
-                color: "var(--primary)",
-                fontWeight: "bold",
-                borderRadius: "0",
-              }}
-            >
-              X
-            </button>
-          </div>
-        ) : (
-          <div
-            className="my-4 p-3 d-flex gap-2"
-            style={{
-              border: "1px solid aliceblue",
-              borderRadius: "14px",
-            }}
-          >
-            <input
-              type="text"
-              ref={(e) => e && (e.value = coupon)}
-              className="input-group-text flex-grow-1 input-group-text"
-              style={{ textAlign: "start" }}
-              onChange={({ target }) => (coupon = target.value)}
-              placeholder={getText(10)}
-            />
-            <button
-              type="button"
-              className="btn btn-primary px-3 py-2"
-              onClick={addCoupon}
-            >
-              {getText(11)}
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const items = cart.map((item, I) =>
-    DesktopProductItem(item, I, editCartItem),
-  );
-
-  return (
-    <ul className="text-center d-grid gap-1 list-unstyled m-0 overflow-hidden p-3">
-      <li>{getText(4)}</li>
-      <li>{getText(5)}</li>
-      <li>{getText(6)}</li>
-      <li>{getText(7)}</li>
-      <li>{getText(8)}</li>
-
-      <li className="seperator mb-3">
-        <hr className="m-0" />
-      </li>
-
-      {items}
-
-      {couponData ? (
-        <li
-          className="d-flex justify-content-between mt-3 py-2"
-          style={{
-            backgroundColor: "aliceblue",
-            borderRadius: "16px",
-            fontWeight: "300",
-            paddingInlineStart: "12px",
-          }}
-        >
-          <p
-            className="d-flex flex-column gap-1 m-0"
-            style={{ textAlign: "start" }}
-          >
-            <h5 className="align-items-center d-flex gap-1 m-0">
-              {couponData.name}
-              <hr
-                className="m-0"
-                style={{
-                  border: "none",
-                  backgroundColor: "var(--primary)",
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "100%",
-                }}
-              />
-              <sub style={{ color: "var(--primary)" }}>
-                {couponData.count} {getText(9)}
-              </sub>
-            </h5>
-            {couponData.description}
-          </p>
-
-          <button
-            className="btn"
-            onClick={rejectCoupon}
-            style={{
-              backgroundColor: "transparent",
-              color: "var(--primary)",
-              fontWeight: "bold",
-              borderRadius: "0",
-            }}
-          >
-            X
-          </button>
-        </li>
-      ) : (
-        <li className="mt-3">
-          <input
-            type="text"
-            ref={(e) => e && (e.value = coupon)}
-            className="input-group-text"
-            onChange={({ target }) => (coupon = target.value)}
-            placeholder={getText(10)}
-          />
-          <button type="button" className="btn px-3 py-2" onClick={addCoupon}>
-            {getText(11)}
-          </button>
-        </li>
-      )}
-    </ul>
-  );
+  // Unchanged from the previous implementation.
+  const payable = Math.max(0, totalPrice - userWallet + +discount);
 
   function editCartItem(index, quantity) {
-    dispatch({
-      type: "products/updateCartItem",
-      payload: { index, quantity },
-    });
+    dispatch({ type: "products/updateCartItem", payload: { index, quantity } });
   }
 
-  function addCoupon() {
-    if (coupon === "") return false;
-    else if (!store.User.loaded) return setErr(getText(20));
-    window.localStorage.setItem("coupon", coupon);
+  function addCoupon(value) {
+    if (!value) return;
+    if (!store.User.loaded) return setErr(getText(20));
+    window.localStorage.setItem("coupon", value);
     setDiscount(false);
   }
 
@@ -377,157 +152,200 @@ function ItemsList({
   }
 
   function applyCoupon(res) {
-    const { discount_type, discount } = res,
-      value =
-        discount_type === "PERCENTAGE"
-          ? ((totalPrice - userWallet) / 100) * +discount
-          : +discount;
-
-    setDiscount(-value);
+    const { discount_type, discount: value } = res;
+    setDiscount(
+      -(discount_type === "PERCENTAGE"
+        ? ((totalPrice - userWallet) / 100) * +value
+        : +value),
+    );
     couponData = res;
   }
+
+  return (
+    <div className="mt-cart">
+      <div className="mt-cart__lines">
+        <ul>
+          {cart.map((item, index) => (
+            <CartLine
+              key={item.id + "-" + index}
+              item={item}
+              index={index}
+              onEdit={editCartItem}
+            />
+          ))}
+        </ul>
+
+        <Coupon
+          value={coupon}
+          data={couponData}
+          onApply={addCoupon}
+          onRemove={rejectCoupon}
+        />
+      </div>
+
+      <aside className="mt-cart__summary">
+        <h2>{getText(12)}</h2>
+
+        <dl>
+          <div>
+            <dt>{getText(13)}</dt>
+            <dd className="mt-price">{totalPrice.toFixed(2)} ر.س</dd>
+          </div>
+
+          <div>
+            <dt>{getText(16)}</dt>
+            <dd className={"mt-price" + (discount ? " is-cut" : "")}>
+              {discount === false
+                ? getText(17)
+                : discount
+                  ? `− ${Math.abs(discount).toFixed(2)} ر.س`
+                  : "—"}
+            </dd>
+          </div>
+
+          {userWallet > 0 && (
+            <div>
+              <dt>
+                {getText(15)}
+                <small>يُخصم تلقائياً عند الدفع</small>
+              </dt>
+              <dd className="mt-price is-cut">− {userWallet.toFixed(2)} ر.س</dd>
+            </div>
+          )}
+        </dl>
+
+        <div className="mt-cart__total">
+          <span>{getText(18)}</span>
+          <b className="mt-price">{payable.toFixed(2)} ر.س</b>
+        </div>
+
+        <Link className="mt-btn mt-btn--primary mt-cart__go" to="/checkout">
+          {getText(19)}
+        </Link>
+      </aside>
+    </div>
+  );
 }
 
-function MobileProductItem(item, I, editCart) {
+/* ------------------------------------------------------------------- lines */
+
+function CartLine({ item, index, onEdit }) {
+  const addons = item.addons || [];
+  let unit = item.price;
+  addons.forEach((a) => (unit += a.price));
+
+  const href =
+    "/products/" +
+    (item.slug || "product-item") +
+    "?id=" +
+    item.id +
+    "&isCustom=" +
+    +(item.category_name === getText(24));
+
   return (
-    <li
-      key={item.slug}
-      className="align-items-baseline d-grid gap-3 p-3"
-      style={{
-        border: "1px solid aliceblue",
-        gridTemplateColumns: "80px 1fr",
-        borderRadius: "16px",
-      }}
-    >
-      <img
-        src={baseUrl + item.img}
-        alt="thumb"
-        style={{ borderRadius: "7px" }}
-      />
+    <li className="mt-line">
+      <Link to={href} className="mt-line__thumb">
+        <img
+          src={baseUrl + item.img}
+          alt=""
+          loading="lazy"
+          onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+        />
+      </Link>
 
-      <div>
-        <p className="d-flex justify-content-between">
-          <span className="d-flex flex-column text-black">
-            {item[nameTarget] || item.name}
-            <small className="fw-lighter text-secondary">
-              {getText(6)}: {item.price} <CurrencySymbol />
-            </small>
-          </span>
+      <div className="mt-line__body">
+        <Link to={href} className="mt-line__name">
+          {item[nameTarget] || item.name}
+        </Link>
 
-          <button className="btn text-secondary" onClick={() => editCart(I, 0)}>
-            X
-          </button>
+        <p className="mt-line__addons">
+          {addons.length
+            ? addons.map((a) => `${a.addon_name} (+${a.price})`).join(" · ")
+            : getText(23)}
         </p>
 
-        <div className="align-items-center d-flex fw-bold justify-content-between">
-          <div
-            className="align-items-center d-flex fw-bold gap-3 justify-content-between"
-            style={{ background: "aliceblue", borderRadius: "18px" }}
-          >
-            <button
-              className="btn"
-              style={{ color: "var(--bs-cyan)" }}
-              onClick={() => editCart(I, item.quantity - 1)}
-            >
-              -
-            </button>
-            {item.quantity}
-            <button
-              className="btn"
-              style={{ color: "var(--bs-blue)" }}
-              onClick={() => editCart(I, item.quantity + 1)}
-            >
-              +
-            </button>
-          </div>
-          {item.price * item.quantity} <CurrencySymbol />
-        </div>
+        <span className="mt-line__unit">
+          {getText(6)}: <b className="mt-price">{unit.toFixed(2)} ر.س</b>
+        </span>
+      </div>
+
+      <div className="mt-line__actions">
+        <span className="mt-stepper">
+          <button type="button" onClick={() => onEdit(index, item.quantity - 1)} aria-label="إنقاص">
+            −
+          </button>
+          <b>{item.quantity}</b>
+          <button type="button" onClick={() => onEdit(index, item.quantity + 1)} aria-label="زيادة">
+            +
+          </button>
+        </span>
+
+        <b className="mt-price mt-line__total">
+          {(unit * item.quantity).toFixed(2)} ر.س
+        </b>
+
+        <button
+          type="button"
+          className="mt-line__remove"
+          onClick={() => onEdit(index, 0)}
+          aria-label={`احذف ${item[nameTarget] || item.name} من السلة`}
+        >
+          حذف
+        </button>
       </div>
     </li>
   );
 }
 
-function DesktopProductItem(item, I, editCart) {
-  const { id, quantity, name, addons } = item;
-  let price = item.price;
+/* ------------------------------------------------------------------ coupon */
 
-  const Addons =
-    addons.length === 0 ? (
-      <li>{getText(23)}</li>
-    ) : (
-      addons.map((a) => {
-        price += a.price;
-        return (
-          <li key={a.addon_id} className="d-flex justify-content-center">
-            {a.addon_name} -
+function Coupon({ value, data, onApply, onRemove }) {
+  const [draft, setDraft] = useState(value);
+
+  if (data) {
+    return (
+      <div className="mt-coupon mt-coupon--on">
+        <div>
+          <b>
+            {data.name}
             <span>
-              {a.price} <CurrencySymbol />
+              {data.count} {getText(9)}
             </span>
-          </li>
-        );
-      })
+          </b>
+          {data.description && <p>{data.description}</p>}
+        </div>
+        <button type="button" onClick={onRemove}>
+          إزالة
+        </button>
+      </div>
     );
+  }
 
   return (
-    <React.Fragment>
-      <li className="item-name align-items-center d-flex gap-1">
-        <button className="btn p-0" onClick={() => editCart(I, 0)}>
-          x
-        </button>
-
-        <Link
-          className="d-flex align-items-center gap-2 text-decoration-none"
-          style={{ textAlign: "start" }}
-          to={
-            "/products/" +
-            (item.slug || "product-item") +
-            "?id=" +
-            id +
-            "&isCustom=" +
-            +(item.category_name === getText(24))
-          }
-        >
-          <img
-            className="d-lg-block d-none"
-            src={baseUrl + item.img}
-            alt="thumbnail"
-            style={{ height: "32px", width: "32px", borderRadius: "4px" }}
-          />
-          {item[nameTarget] || name}
-        </Link>
-      </li>
-
-      <li>
-        <ul
-          className="d-flex flex-column list-unstyled m-0 p-0 gap-1"
-          style={{ fontSize: "smaller", color: "var(--midgray)" }}
-        >
-          {Addons}
-        </ul>
-      </li>
-
-      <li className="item-price justify-content-center">
-        <span>{price}</span> <CurrencySymbol />
-      </li>
-
-      <li className="align-items-center d-flex gap-2 item-quantity justify-content-center">
-        <button className="btn p-0" onClick={() => editCart(I, quantity + 1)}>
-          +
-        </button>
-        {quantity}
-        <button className="btn p-0" onClick={() => editCart(I, quantity - 1)}>
-          -
-        </button>
-      </li>
-
-      <li className="item-total justify-content-center">
-        <span>{price * quantity}</span> <CurrencySymbol />
-      </li>
-    </React.Fragment>
+    <form
+      className="mt-coupon"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onApply(draft.trim());
+      }}
+    >
+      <input
+        type="text"
+        value={draft}
+        onChange={({ target }) => setDraft(target.value)}
+        placeholder={getText(10)}
+        aria-label={getText(10)}
+      />
+      <button type="submit" className="mt-btn mt-btn--dark">
+        {getText(11)}
+      </button>
+    </form>
   );
 }
 
-function CartCashback({ totalPrice, source }) {
+/* ---------------------------------------------------------------- cashback */
+
+function CashbackBar({ totalPrice, source }) {
   if (!source) return null;
 
   const obj = {
@@ -538,27 +356,57 @@ function CartCashback({ totalPrice, source }) {
 
   if (source.wallet_cash_type) {
     const walletTxt = +source.wallet_text;
-    if (walletTxt === NaN || walletTxt === 0) return null;
+    if (Number.isNaN(walletTxt) || walletTxt === 0) return null;
     obj.max = +source.wallet_cash_min_order;
     obj.value = +source.wallet_cash_value;
   }
 
+  if (!obj.max) return null;
+
+  const reached = totalPrice >= obj.max,
+    pct = Math.min(100, Math.round((totalPrice / obj.max) * 100));
+
   return (
-    <div
-      className="align-items-center container d-flex flex-column gap-3 h5 mt-4 mb-3"
-      style={{ cssText: "color: var(--primary); font-weight: 600;" }}
-    >
+    <div className={"mt-cashback" + (reached ? " is-on" : "")}>
       <p>
-        {getText(25) + obj.max + getText(26) + obj.value}
-        {obj.type === "percentage" ? "%" : <CurrencySymbol />}
-        {getText(27)}
+        {reached ? (
+          <>
+            وصلت للحد — سيُضاف <b>{obj.value}{obj.type === "percentage" ? "٪" : " ر.س"}</b> كاش باك
+            إلى محفظتك
+          </>
+        ) : (
+          <>
+            {getText(25)}
+            <b>{obj.max} ر.س</b>
+            {getText(26)}
+            <b>{obj.value}{obj.type === "percentage" ? "٪" : " ر.س"}</b>
+            {getText(27)}
+          </>
+        )}
       </p>
-      <progress
-        value={totalPrice}
-        max={+obj.max}
-        style={{ cssText: "max-width: 500px;" }}
-      ></progress>
+      <div className="mt-cashback__bar">
+        <i style={{ width: pct + "%" }} />
+      </div>
     </div>
+  );
+}
+
+function Recommended({ items }) {
+  const picks = (items || []).filter((i) => i.is_popular).slice(0, 4);
+  if (!picks.length) return null;
+
+  return (
+    <section>
+      <div className="mt-section-head">
+        <h2>{getText(28)}</h2>
+        <Link to="/all-products">عرض الكل</Link>
+      </div>
+      <div className="mt-grid">
+        {picks.map((item) => (
+          <ProductCard key={item.id} item={item} />
+        ))}
+      </div>
+    </section>
   );
 }
 

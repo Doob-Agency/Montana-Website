@@ -1,11 +1,67 @@
-#faq{
-  p{
-    height: 0px;
-    transition: 150ms ease-in-out;
-    overflow: hidden;
+/* FAQ — see index.jsx */
 
-    &.active{
-      height: var(--H);
+.mt-faq {
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--mt-2);
+    max-width: 78ch;
+  }
+
+  details {
+    background: var(--mt-surface);
+    border: 1px solid var(--mt-line);
+    border-radius: var(--mt-r-md);
+    overflow: hidden;
+    transition: border-color var(--mt-ease);
+
+    &[open] {
+      border-color: var(--mt-navy);
     }
+  }
+
+  summary {
+    cursor: pointer;
+    padding: var(--mt-4);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--mt-ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--mt-3);
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    /* The chevron is drawn rather than shipped as an icon file, and rotates to
+       show state — the old accordion gave no indication it could open. */
+    &::after {
+      content: "";
+      flex: none;
+      width: 9px;
+      height: 9px;
+      border-inline-end: 2px solid var(--mt-navy);
+      border-block-end: 2px solid var(--mt-navy);
+      transform: rotate(45deg);
+      transition: transform var(--mt-ease);
+    }
+  }
+
+  details[open] summary::after {
+    transform: rotate(-135deg);
+  }
+
+  details p {
+    margin: 0;
+    padding: 0 var(--mt-4) var(--mt-4);
+    color: var(--mt-ink-2);
+    font-size: 0.9rem;
+    line-height: 1.85;
   }
 }

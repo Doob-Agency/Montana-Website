@@ -1,78 +1,155 @@
+/**
+ * Checkout — restyled, not rebuilt.
+ *
+ * This screen carries the order payload, the coupon, the wallet split, the
+ * scheduling window and three payment gateways across four files. Rewriting its
+ * markup to change how it looks would put real money at risk for no benefit, so
+ * this restyles the structure it already renders and leaves every line of that
+ * logic alone.
+ */
+
 #checkout {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: var(--mt-band) clamp(14px, 3vw, 28px) var(--mt-7);
+
   ul {
-    color: var(--midgray);
+    color: var(--mt-muted);
 
     & > li.h5 {
-      color: var(--primary);
+      color: var(--mt-ink);
     }
   }
 
+  /* --- the form side --- */
+
   & > .container > fieldset:first-child {
-    flex: 1 0 65%;
+    flex: 1 0 62%;
+    background: var(--mt-surface);
+    border: 1px solid var(--mt-line);
+    border-radius: var(--mt-r-lg);
+
+    legend {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--mt-ink);
+    }
 
     & .btn,
     & li {
-      border: 1px solid #cdcdcd;
-      border-radius: 241px;
-      color: var(--midgray);
+      border: 1px solid var(--mt-line);
+      /* 241px was an arbitrary number that happened to look like a pill; the
+         token says the same thing and stays in step with the rest of the site. */
+      border-radius: var(--mt-r-pill);
+      color: var(--mt-ink-2);
+      font-weight: 600;
 
       &:not(li) {
-        scale: 0.9;
+        /* The old rule shrank every button to 90% and then scaled it back on
+           hover, so controls visibly jumped under the cursor. */
+        scale: 1;
       }
 
       &:hover,
       &[data-active="true"] {
         cursor: pointer;
-        background-color: #c9e2f4;
-        color: var(--primary);
-        border-color: #c9e2f4;
+        background-color: var(--mt-navy);
+        color: #fff;
+        border-color: var(--mt-navy);
       }
     }
   }
 
+  /* --- the summary side --- */
+
   & > .container > div:last-child {
     flex: 1 0 30%;
-    border: 1px solid #f1f1f1;
-    border-radius: 24px;
+    background: var(--mt-surface);
+    border: 1px solid var(--mt-line);
+    border-radius: var(--mt-r-lg);
+    align-self: flex-start;
 
     @media screen and (min-width: 992px) {
       position: sticky;
-      top: 160px;
+      top: 96px;
     }
 
     hr {
-      border-color: #bfbaba;
+      border-color: var(--mt-line);
+      opacity: 1;
     }
 
     div {
-      // font-size: smaller;
       display: flex;
       align-items: center;
       justify-content: space-between;
 
       &:not(.total) > span {
-        color: var(--midgray);
+        color: var(--mt-muted);
+        font-size: 0.86rem;
       }
 
       &.total > span {
-        color: var(--primary);
-        font-size: larger;
+        color: var(--mt-ink);
+        font-size: 1.15rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
       }
     }
 
     label {
-      font-size: smaller;
+      font-size: 0.8rem;
       font-weight: 600;
+      color: var(--mt-ink-2);
     }
 
     & > .title {
-      color: var(--primary);
+      color: var(--mt-ink);
+      font-weight: 800;
     }
 
     & > button {
-      background-color: var(--primary);
+      background-color: var(--mt-yellow);
+      color: var(--mt-navy);
+      border: 0;
+      border-radius: var(--mt-r-pill);
+      font-weight: 800;
+      padding-block: 0.7rem;
+
+      &:hover {
+        filter: brightness(0.95);
+      }
+
+      &:disabled {
+        background-color: var(--mt-line);
+        color: var(--mt-muted);
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+/* The two confirmation dialogs (no nearby branch / outside opening hours) were
+   bare white boxes with a red heading. */
+#closest-res,
+#time-warning {
+  border: 1px solid var(--mt-line);
+  border-radius: var(--mt-r-lg);
+  box-shadow: var(--mt-shadow-2);
+
+  b.text-danger {
+    color: var(--mt-off) !important;
+  }
+
+  .btn {
+    border-radius: var(--mt-r-pill);
+    font-weight: 700;
+    border: 1px solid var(--mt-line);
+
+    &:hover {
+      background: var(--mt-navy);
       color: #fff;
-      border-radius: 24px;
+      border-color: var(--mt-navy);
     }
   }
 }

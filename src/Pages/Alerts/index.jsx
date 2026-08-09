@@ -3,6 +3,7 @@ import { getUserAlerts } from "../../store";
 import { Link, useNavigate } from "react-router-dom";
 import { useLayoutEffect } from "react";
 import getPage from "../../translation.js";
+import "./index.scss";
 
 const getText = getPage("alerts");
 
@@ -20,77 +21,81 @@ const base = process.env.REACT_APP_API_URL,
 export default function Alerts() {
   const redirect = useNavigate(),
     loaded = window.localStorage.getItem("token"),
-    alerts = useSelector((state) => state.User).alerts.map(alertItem);
+    alerts = useSelector((state) => state.User).alerts;
 
   useLayoutEffect(() => {
     loaded || redirect("/user");
-  }, [loaded]);
+  }, [loaded, redirect]);
+
+  const unread = alerts.filter((a) => !a.is_read).length;
 
   return (
-    <section className="align-items-start container d-flex flex-column gap-3">
-      <button
-        className="btn"
-        style={{ border: "none", outline: "none" }}
-        onClick={markAllAsRead}
-      >
-        {getText(0)}
-      </button>
+    <div className="mt-page mt-alerts">
+      <header className="mt-page__head">
+        <h1>الإشعارات</h1>
+        <p>{unread ? `${unread} غير مقروء` : "لا يوجد جديد"}</p>
+      </header>
 
-      <ul className="list-unstyled m-0 p-0 w-100" style={{ maxWidth: "992px" }}>
-        {alerts}
-      </ul>
-    </section>
+      {alerts.length ? (
+        <>
+          {unread > 0 && (
+            <button type="button" className="mt-btn mt-btn--ghost mt-alerts__all" onClick={markAllAsRead}>
+              {getText(0)}
+            </button>
+          )}
+
+          <ul>{alerts.map(alertItem)}</ul>
+        </>
+      ) : (
+        <div className="mt-empty">
+          <h2>لا توجد إشعارات</h2>
+          <p>
+            سيظهر هنا كل ما يخص طلباتك — تأكيد الطلب، خروجه للتوصيل، والعروض
+            الخاصة بك.
+          </p>
+          <Link className="mt-btn mt-btn--dark" to="/all-products">
+            تصفّح المنتجات
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
 
 function alertItem({ data, id, is_read, created_at }) {
-  data = JSON.parse(data);
+  // A malformed row used to throw here and blank the whole page.
+  let parsed;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return null;
+  }
 
   const reqBody = { notification_id: id },
-    img = data.custom_image ? (
-      <img
-        src={base + data.custom_image}
-        className="mx-auto"
-        style={{ maxHeight: 150 + "px" }}
-        alt="custom"
-      />
-    ) : null,
-    outletChildren = (
+    body = (
       <>
-        <span className="float-start">{created_at.split(" ")[0]}</span>
-        <span className="h5 d-block h5 m-0">{data.title}</span>
-        {data.message}
+        <span className="mt-alert__date">{String(created_at).split(" ")[0]}</span>
+        <b className="mt-alert__title">{parsed.title}</b>
+        <p className="mt-alert__msg">{parsed.message}</p>
       </>
-    ),
-    outlet = data.click_action ? (
-      <Link
-        to={data.click_action}
-        className="px-3 py-2 text-decoration-none"
-        style={{ color: "currentColor" }}
-      >
-        {outletChildren}
-      </Link>
-    ) : (
-      <div className="px-3 py-2">{outletChildren}</div>
     );
 
   return (
-    <li
-      className="d-grid gap-3 mt-3"
-      style={{
-        backgroundColor: "aliceblue",
-        borderRadius: "0.5rem",
-        opacity: is_read ? 0.5 : 1,
-      }}
-      key={id}
-      onClick={markAlertAsRead}
-    >
-      {img}
-      {outlet}
+    <li key={id} className={"mt-alert" + (is_read ? " is-read" : "")} onClick={markAlertAsRead}>
+      {parsed.custom_image && (
+        <img src={base + parsed.custom_image} alt="" loading="lazy" />
+      )}
+
+      {parsed.click_action ? (
+        <Link to={parsed.click_action}>{body}</Link>
+      ) : (
+        <div>{body}</div>
+      )}
     </li>
   );
 
   function markAlertAsRead() {
+    if (is_read) return;
     fetch(`${baseUrl}/mark-one-notification-read`, {
       ...fetchOptions,
       body: JSON.stringify(reqBody),
@@ -99,8 +104,5 @@ function alertItem({ data, id, is_read, created_at }) {
 }
 
 function markAllAsRead() {
-  console.log("mark all as read");
-  fetch(`${baseUrl}/mark-all-notifications-read`, fetchOptions).then(
-    getUserAlerts
-  );
+  fetch(`${baseUrl}/mark-all-notifications-read`, fetchOptions).then(getUserAlerts);
 }

@@ -4,44 +4,29 @@ import "./index.scss";
 
 const getText = getPage("faq");
 
+/**
+ * Built on <details>, so a question opens on keyboard and is findable with the
+ * browser's own find-in-page. The previous accordion toggled a class from an
+ * onClick on an <h5>, which neither keyboards nor Ctrl+F could reach.
+ */
 export default function () {
   return (
-    <section id="faq" className="container" style={{ color: "var(--primary)" }}>
-      <h3 className="mb-5 text-center" style={{ cursor: "pointer" }}>
-        {getText(0)}
-      </h3>
-      <ul className="d-grid gap-3 list-unstyled m-0 p-0">{faqs.map(tab)}</ul>
-    </section>
+    <div className="mt-page mt-faq">
+      <header className="mt-page__head">
+        <h1>{getText(0)}</h1>
+        <p>لم تجد إجابتك؟ اتصل بنا على 920035416</p>
+      </header>
+
+      <ul>
+        {faqs.map(({ q, a }, i) => (
+          <li key={i}>
+            <details>
+              <summary>{q}</summary>
+              <p>{a}</p>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
-}
-
-function tab({ q, a }, i) {
-  let view;
-
-  return (
-    <li key={i} className="d-grid gap-2">
-      <h5
-        className="m-0 px-3 py-2"
-        style={{ border: "1px solid currentColor", borderRadius: "16px" }}
-        onClick={toggleView}
-      >
-        {q}
-      </h5>
-
-      <p className="mb-0 px-3" ref={handleRef}>
-        {a}
-      </p>
-    </li>
-  );
-
-  function toggleView() {
-    view && view.classList.toggle("active");
-  }
-
-  function handleRef(el) {
-    if (el) {
-      el.style = `--H: ${el.scrollHeight}px;`;
-      view = el;
-    }
-  }
 }

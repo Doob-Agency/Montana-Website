@@ -1,29 +1,37 @@
 import { Link } from "react-router-dom";
 
+/**
+ * A 404 that offers a way forward instead of a dead end. The previous one gave
+ * a single link back to the homepage, which is rarely where the visitor was
+ * trying to go.
+ */
 export default () => (
-  <section
-    className="align-items-center container d-flex flex-column gap-4 justify-content-center"
-    style={{ height: "55vh" }}
-  >
-    <div style={{ color: "var(--primary)", textAlign: "center" }}>
-      <h2 className="m-0" style={{ fontSize: "5rem" }}>
+  <div className="mt-page">
+    <div className="mt-empty" style={{ paddingBlock: "var(--mt-7)" }}>
+      <p
+        style={{
+          fontSize: "clamp(3rem, 9vw, 5rem)",
+          fontWeight: 800,
+          color: "var(--mt-navy)",
+          lineHeight: 1,
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
         404
-      </h2>
-      <p className="m-0" style={{ fontWeight: "600", color: "var(--bs-gray)" }}>
-        هذه الصفحة غير موجودة
       </p>
+      <h2>هذه الصفحة غير موجودة</h2>
+      <p>
+        قد يكون الرابط قديماً أو الصنف لم يعد ضمن قائمة الفرع. جرّب البحث في
+        المنتجات أو ابدأ من الرئيسية.
+      </p>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+        <Link className="mt-btn mt-btn--primary" to="/all-products">
+          تصفّح المنتجات
+        </Link>
+        <Link className="mt-btn mt-btn--ghost" to="/">
+          الصفحة الرئيسية
+        </Link>
+      </div>
     </div>
-
-    <Link
-      to="/"
-      className="btn px-4"
-      style={{
-        color: "var(--primary)",
-        textDecoration: "none",
-        backgroundColor: "#0b43680f",
-      }}
-    >
-      الصفحة الرئيسية
-    </Link>
-  </section>
+  </div>
 );

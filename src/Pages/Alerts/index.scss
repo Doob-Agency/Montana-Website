@@ -1,0 +1,77 @@
+/* Notifications — see index.jsx */
+
+.mt-alerts {
+  &__all {
+    align-self: flex-start;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--mt-2);
+    max-width: 780px;
+  }
+}
+
+.mt-alert {
+  background: var(--mt-surface);
+  border: 1px solid var(--mt-line);
+  /* Unread carries a rail rather than only an opacity change, so the state is
+     visible to anyone who cannot pick up a 50% fade. */
+  border-inline-start: 3px solid var(--mt-yellow);
+  border-radius: var(--mt-r-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--mt-ease);
+
+  &.is-read {
+    border-inline-start-color: var(--mt-line);
+    background: var(--mt-ground);
+    cursor: default;
+  }
+
+  &:hover:not(.is-read) {
+    border-color: var(--mt-navy);
+    border-inline-start-color: var(--mt-yellow);
+  }
+
+  img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+
+  > a,
+  > div {
+    display: block;
+    padding: var(--mt-3) var(--mt-4);
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+.mt-alert__date {
+  float: inline-end;
+  font-size: 0.72rem;
+  color: var(--mt-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.mt-alert__title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--mt-ink);
+  margin-bottom: 2px;
+}
+
+.mt-alert__msg {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--mt-ink-2);
+  line-height: 1.7;
+}

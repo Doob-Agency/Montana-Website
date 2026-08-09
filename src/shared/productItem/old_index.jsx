@@ -52,7 +52,7 @@ export default function (item, I) {
       }}
     >
       <video
-        src={process.env.REACT_APP_API_URL + process.env.PUBLIC_URL + "/assets/heart.mp4"}
+        src={process.env.PUBLIC_URL + "/assets/heart.mp4"}
         style={{ maxHeight: "84px", marginLeft: "-17px" }}
         ref={handleFav}
       ></video>

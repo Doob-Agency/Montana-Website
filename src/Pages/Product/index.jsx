@@ -1,33 +1,28 @@
-import getPage, { inlineArEn } from "../../translation";
-// eslint-disable-next-line react-hooks/exhaustive-deps
+/**
+ * Product page — direction B.
+ *
+ * The buying decision lives above the fold: photo, price, availability in
+ * words, add-ons, and a quantity control that shows what the line will actually
+ * cost. The previous version put a calorie count and a nutrition accordion
+ * between the price and the buy button, and confirmed an add-to-cart by
+ * covering the whole panel with an animated GIF for three seconds.
+ */
 /* eslint-disable import/no-anonymous-default-export */
 import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector, useStore } from "react-redux";
-import { useSearchParams } from "react-router-dom";
-import productItem from "../../shared/productItem";
-import Carousel from "../../shared/Carousel";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useSearchParams } from "react-router-dom";
+import getPage, { getActiveLang, inlineArEn } from "../../translation";
 import { ordinaryCategories } from "../All_Products";
-import Minus from "../../icons/Minus";
-import Plus from "../../icons/Plus";
-import { getActiveLang } from "../../translation";
+import ProductCard from "../Home/ProductCard";
 import "./index.scss";
-import CurrencySymbol from "../../CurrencySymbol";
-import Arrow_Down from "../../icons/Arrow_Down";
 
-const nutrationInfo = window.Nutriants,
-  Nutriants = Object.keys(nutrationInfo);
+const nutritionInfo = window.Nutriants,
+  nutrients = Object.keys(nutritionInfo);
 
 const getText = getPage("product"),
   isArabic = getActiveLang() === "العربية",
   priceTypes = window.priceTypes,
-  hiddenAlert = { opacity: 0, transform: "translateY(100%)" },
-  activeAlert = {
-    opacity: 1,
-    visibility: "visible",
-    transform: "translateY(0)",
-  },
-  baseUrl = process.env.REACT_APP_API_URL,
-  docFrag = document.createElement("div");
+  API = process.env.REACT_APP_API_URL;
 
 export default function () {
   const Products = useSelector(($) => $.Products),
@@ -35,447 +30,318 @@ export default function () {
     id = query.get("id"),
     isCustom = query.get("isCustom");
 
-  const productId = parseInt(id),
+  const productId = parseInt(id, 10),
     items = Products[+isCustom ? "early_booking" : "data"],
     state = items.find((e) => e.id === productId);
 
-  if (!state) return null;
+  // The catalogue arrives after the first paint, so "not found yet" and "does
+  // not exist" are different things. Rendering null for both left a blank page.
+  if (!Products.loaded) {
+    return (
+      <div className="mt-page">
+        <div className="mt-product">
+          <div className="mt-product__media mt-skeleton" style={{ minHeight: 380 }} />
+          <div className="mt-product__panel">
+            <span className="mt-skeleton" style={{ height: 28, width: "70%" }} />
+            <span className="mt-skeleton" style={{ height: 16, width: "40%" }} />
+            <span className="mt-skeleton" style={{ height: 90 }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!state) {
+    return (
+      <div className="mt-page">
+        <div className="mt-empty">
+          <h2>هذا الصنف غير موجود في الفرع المختار</h2>
+          <p>
+            قد يكون متاحاً في فرع آخر، أو تكون قد تغيّرت قائمة هذا الفرع. جرّب
+            تصفّح كل الأصناف.
+          </p>
+          <Link className="mt-btn mt-btn--dark" to="/all-products">
+            تصفّح كل المنتجات
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <ProductInfo {...state} />
-      <Related
-        items={items}
-        exclude={state.id}
-        categoryID={state.item_category_id}
-      />
-    </>
+    <div className="mt-page mt-scope">
+      <ProductInfo key={state.id} state={state} />
+      <Related items={items} exclude={state.id} categoryID={state.item_category_id} />
+    </div>
   );
 }
 
-function ProductInfo(state) {
-  let quantity = 0;
-
-  const store = useStore().getState(),
-    settings = store.settings.data,
-    { isAvailable, status } = checkStatus(state, settings),
-    dispatch = useDispatch(),
-    resId = store.Restaurant.data.id,
+function ProductInfo({ state }) {
+  const settings = useSelector((e) => e.settings).data || {},
+    resId = useSelector((e) => e.Restaurant).data.id,
     cartItems = useSelector((e) => e.Products).cart,
-    [Alert, setAlert] = useState(false),
-    [currCategoryName, setAddonCat] = useState(""),
-    [load, update] = useState(false),
-    // [quantity, setQuntity] = useState(1),
+    dispatch = useDispatch();
+
+  const [currCategoryName, setAddonCat] = useState(""),
+    [justAdded, setJustAdded] = useState(false),
+    [, forceUpdate] = useState(false),
     selectedAddons = useRef(new Set()).current;
 
+  // A quiet confirmation that clears itself, instead of a full-panel GIF that
+  // blocked the page for three seconds after every tap.
   useEffect(() => {
-    Alert &&
-      setTimeout(() => {
-        selectedAddons.clear();
-        // setQuntity(1);
-        setAddonCat("");
-        setAlert(false);
-      }, 3000);
-  }, [Alert]);
+    if (!justAdded) return;
+    const t = setTimeout(() => setJustAdded(false), 2200);
+    return () => clearTimeout(t);
+  }, [justAdded]);
 
-  const cartRef = cartItems.find((e) => e.id === state.id);
-  if (cartRef) {
-    quantity = cartRef.quantity;
-  }
+  const { isAvailable, status } = checkStatus(state, settings),
+    cartRef = cartItems.find((e) => e.id === state.id),
+    quantity = cartRef ? cartRef.quantity : 0;
 
-  const priceType = isArabic
-    ? priceTypes[state.price_type]
-    : state.price_type.replace(/_/g, " ").toUpperCase();
+  const price = +state.price,
+    oldPrice = +state.old_price,
+    discounted = oldPrice > price,
+    priceType = isArabic
+      ? priceTypes[state.price_type]
+      : String(state.price_type || "").replace(/_/g, " ").toUpperCase();
 
-  const calsTxt = getText(0),
-    cals = state.calories && (
-      <div
-        className="align-items-center d-flex gap-2"
-        style={{ maxHeight: "40px" }}
-      >
-        <img src={process.env.PUBLIC_URL + "/assets/cals.png"} alt="cals" />
-        <h3 style={{ fontSize: "inherit" }} className="m-0">
-          {calsTxt}
-        </h3>
-        : {state.calories}
-      </div>
-    );
-
-  const alertState = Alert ? activeAlert : hiddenAlert,
-    old_price = +state.old_price,
-    discountFlag = old_price > 0 && (
-      <span
-        className="flag"
-        style={{ "--bg": "#e4f4ff", "--color": "var(--primary)" }}
-      >
-        {parseInt(100 - (+state.price / old_price) * 100)}%
-        <sub>{getText(1)}</sub>
-      </span>
-    );
-
-  // ============================
-  let lastAddon,
-    totalPrice = +state.price;
-
-  const categories = state.addon_categories,
+  const categories = state.addon_categories || [],
     currCategory = categories.find((c) => c.name === currCategoryName),
-    isSingular = currCategory?.type === "SINGLE",
-    addonItems = currCategory?.addons.map((addon) => {
-      if (selectedAddons.has(addon)) lastAddon = addon;
-      return AddonItem(addon, toggleAddon, selectedAddons.has(addon));
-    });
+    isSingular = currCategory?.type === "SINGLE";
 
-  selectedAddons.forEach((a) => (totalPrice += +a.price));
-  totalPrice = totalPrice * quantity;
+  let addonsTotal = 0;
+  selectedAddons.forEach((a) => (addonsTotal += +a.price));
+  const lineTotal = (price + addonsTotal) * Math.max(quantity, 1);
 
-  function toggleAddon(targetMethod, addon) {
-    isSingular && lastAddon && selectedAddons.delete(lastAddon);
-    selectedAddons[targetMethod](addon);
-    update(!load);
+  function toggleAddon(addon) {
+    if (selectedAddons.has(addon)) selectedAddons.delete(addon);
+    else {
+      // A SINGLE category is a radio group: picking one drops the previous.
+      if (isSingular && currCategory) {
+        currCategory.addons.forEach((a) => selectedAddons.delete(a));
+      }
+      selectedAddons.add(addon);
+    }
+    forceUpdate((v) => !v);
   }
 
-  const productName = (isArabic && state.name_ar) || state.name,
-    imageSrc = baseUrl + (state.image || "");
-  docFrag.innerHTML = (isArabic && state.desc_ar) || state.desc;
+  function setQuantity(next) {
+    const q = Math.max(0, next);
 
-  document.title =
-    state.meta_title ||
-    (isArabic ? "مونتانا" : "Montana") + " - " + productName;
-  document
-    .querySelector('meta[name="description"]')
-    .setAttribute("content", state.meta_description);
-
-  return (
-    <section
-      id="product"
-      className="container-fluid container-lg d-flex flex-md-nowrap flex-wrap position-relative py-0 py-md-4"
-    >
-      <div className="col-12 col-md-4 d-flex flex-column py-2">
-        <img src={imageSrc} alt="product" />
-
-        {/* <div className="d-flex justify-content-around">
-          <img src={imageSrc} alt="product" />
-          <img src={imageSrc} alt="product" />
-          <img src={imageSrc} alt="product" />
-          <img src={imageSrc} alt="product" />
-        </div> */}
-      </div>
-
-      <div
-        className="alert m-0"
-        style={{
-          ...alertState,
-          visibility: "hidden",
-          opacity: "0",
-          transform: "translateY(100%)",
-          width: "100%",
-          background: "aliceblue",
-          color: "var(--primary)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          order: "1",
-          position: "absolute",
-          zIndex: "2",
-          bottom: "60px",
-          left: "0px",
-          transition: "150ms ease-out",
-        }}
-      >
-        {getText(2)}
-        <img
-          src={baseUrl + process.env.PUBLIC_URL + "/assets/animation.gif"}
-          style={{ maxHeight: "40px" }}
-          alt="loader"
-        />
-      </div>
-
-      <div className="align-items-start col d-flex flex-column position-relative">
-        <h1 className="title h2">{productName}</h1>
-
-        <div className="state text-center d-flex align-items-center gap-2">
-          <span
-            className="flag d-flex align-items-center gap-1"
-            style={initStateStyle(isAvailable)}
-          >
-            {status}
-          </span>
-          {+state.price < old_price && discountFlag}
-        </div>
-
-        {old_price > 0 && +state.price < old_price && (
-          <div>
-            <del>
-              {state.old_price} <CurrencySymbol />
-            </del>
-          </div>
-        )}
-
-        <div className="d-flex price">
-          <span>
-            {state.price} <CurrencySymbol />
-          </span>
-          /{priceType}
-        </div>
-
-        <div className="desc w-100 d-flex flex-column gap-3 mb-2">
-          <div
-            dangerouslySetInnerHTML={{
-              __html: docFrag.innerHTML,
-            }}
-          ></div>
-
-          <NutritionsFacts item={state} />
-        </div>
-
-        {/* {cals} */}
-
-        {/* <div className="align-items-center d-flex rate">
-          <img src={process.env.PUBLIC_URL + "/assets/home/icons/star.svg"} alt="star" /> 5
-          <Link to="/rate">{getText(7)}</Link>
-        </div> */}
-
-        {!!categories.length && (
-          <div className="addons d-flex flex-wrap w-100">
-            <span className="h5 m-0">{getText(8)}</span>
-
-            <select
-              className="input-group-text my-2 text-end w-100"
-              style={{ borderColor: "#e9f3fa", outline: "none" }}
-              value={currCategoryName}
-              onChange={({ target }) => setAddonCat(target.value)}
-            >
-              <option value="" onClick={() => setAddonCat("")}>
-                {getText(9)}
-              </option>
-
-              {categories.map((C, I) => (
-                <option key={currCategoryName + I} value={C.name}>
-                  {C.name}
-                </option>
-              ))}
-            </select>
-
-            <ul className="d-flex flex-wrap gap-2 m-0 p-0 w-100">
-              {addonItems}
-            </ul>
-          </div>
-        )}
-
-        {!!isAvailable && (
-          <div className="mt-auto align-items-center checkout d-flex gap-3 text-nowrap w-auto">
-            <button
-              type="button"
-              className="align-items-center btn d-flex justify-content-center"
-              onClick={inc}
-            >
-              {Plus}
-            </button>
-            {quantity}
-            <button
-              type="button"
-              className="align-items-center btn d-flex justify-content-center"
-              onClick={dec}
-            >
-              {Minus}
-            </button>
-
-            {/* <div
-              className="btn d-flex gap-2 align-items-center"
-              onClick={addItemToCart}
-            >
-              {getText(10)}
-              {Cart}
-            </div> */}
-
-            <span
-              className="h5 m-0"
-              style={{ fontWeight: "600", color: "var(--primary)" }}
-            >
-              {totalPrice} <CurrencySymbol />
-            </span>
-          </div>
-        )}
-
-        <div
-          className="position-absolute d-flex align-items-center justify-content-center"
-          style={{
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
-            background: "#fff5",
-            pointerEvents: "all",
-            touchAction: "auto",
-            zIndex: "1",
-            opacity: Alert ? 0.6 : 1,
-            visibility: Alert ? "visible" : "hidden",
-            transition: "150ms",
-          }}
-        >
-          <img src={baseUrl + "/assets/img/order-placed.gif"} alt="animation" />
-        </div>
-      </div>
-    </section>
-  );
-
-  function inc() {
-    // if (Number.isInteger(state.stock) && quantity < state.stock) {}
-    quantity++;
-    addItemToCart();
-  }
-
-  function dec() {
-    quantity = Math.max(0, quantity - 1);
-    addItemToCart();
-  }
-
-  function addItemToCart() {
-    if (Alert) return;
-
-    // register addons category_name
-    const addonsFilter = [...selectedAddons].map(
-      ({ id, price, name, addon_category_id }) => {
-        const addon_category_name = categories.find(
-          (c) => c.id === addon_category_id,
-        ).name;
-
-        return {
-          addon_id: id,
-          addon_category_name,
-          addon_name: name,
-          price: +price,
-        };
-      },
-    );
+    const addons = [...selectedAddons].map(({ id, price: p, name, addon_category_id }) => ({
+      addon_id: id,
+      addon_category_name: (categories.find((c) => c.id === addon_category_id) || {}).name,
+      addon_name: name,
+      price: +p,
+    }));
 
     dispatch({
       type: "products/addToCart",
       payload: {
         id: state.id,
-        // is_special: isEarlyBooking,
         img: state.image,
         name: state.name,
         slug: state.slug,
         name_ar: state.name_ar,
         category_name: state.category_name,
         category_id: state.item_category_id,
-        price: +state.price,
+        price,
         restaurant_id: +resId,
-        quantity,
-        addons: addonsFilter,
-        totalPrice,
+        quantity: q,
+        addons,
+        totalPrice: (price + addonsTotal) * q,
       },
     });
 
-    setAlert(true);
+    if (q > 0) setJustAdded(true);
   }
-}
 
-function AddonItem(ADD, toggleAddon, isAdded) {
-  if (!ADD.is_active) return false;
+  const productName = (isArabic && state.name_ar) || state.name,
+    description = (isArabic && state.desc_ar) || state.desc;
 
-  const targetMethod = isAdded ? "delete" : "add",
-    { name, price } = ADD;
+  setDocumentMeta(state, productName);
 
   return (
-    <li
-      onClick={() => toggleAddon(targetMethod, ADD)}
-      key={name}
-      data-active={isAdded}
-      className="d-flex align-items-center justify-content-between gap-2"
-    >
-      <b>{name}</b>
-      {price}
-      <span>{isAdded ? Minus : Plus}</span>
-    </li>
-  );
-}
+    <section className="mt-product">
+      <div className="mt-product__media">
+        <img
+          src={API + (state.image || "")}
+          alt={productName}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+            e.currentTarget.parentElement.dataset.noImage = "true";
+          }}
+        />
+        {discounted && (
+          <span className="mt-card__save">
+            وفّر {Math.round(100 - (price / oldPrice) * 100)}%
+          </span>
+        )}
+      </div>
 
-function Related({ items, exclude, categoryID }) {
-  items = items.filter(
-    (i) => i.item_category_id === categoryID && i.id !== exclude,
-  );
+      <div className="mt-product__panel">
+        <p className="mt-product__crumb">{state.category_name}</p>
+        <h1>{productName}</h1>
 
-  return (
-    <section id="related" className="container mb-5">
-      <p className="h3 mb-3" style={{ color: "var(--primary)" }}>
-        <span>{getText(11)}</span>
-      </p>
+        <p className={"mt-product__state" + (isAvailable ? "" : " is-off")}>
+          {isAvailable ? "متوفرة اليوم" : status}
+        </p>
 
-      <Carousel
-        customConfig={{ autoplay: false, scrollbar: false }}
-        innerItems={items.map(productItem)}
-      />
+        <div className="mt-product__price">
+          <span className="mt-price">
+            {price.toFixed(2)} <small>ر.س</small>
+          </span>
+          {discounted && <del>{oldPrice.toFixed(2)}</del>}
+          {priceType && <em>/ {priceType}</em>}
+        </div>
+
+        {description && (
+          <div
+            className="mt-product__desc"
+            // Copy is authored in the dashboard as HTML.
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
+        )}
+
+        {!!categories.length && (
+          <div className="mt-product__addons">
+            <h2>{getText(8)}</h2>
+
+            <div className="mt-product__addoncats">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="mt-chip"
+                  aria-pressed={c.name === currCategoryName}
+                  onClick={() => setAddonCat(c.name === currCategoryName ? "" : c.name)}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+
+            {currCategory && (
+              <ul className="mt-product__addonlist">
+                {currCategory.addons
+                  .filter((a) => a.is_active)
+                  .map((addon) => {
+                    const on = selectedAddons.has(addon);
+                    return (
+                      <li key={addon.id}>
+                        <button type="button" aria-pressed={on} onClick={() => toggleAddon(addon)}>
+                          <b>{addon.name}</b>
+                          <span className="mt-price">+{(+addon.price).toFixed(2)}</span>
+                          <i aria-hidden="true">{on ? "−" : "+"}</i>
+                        </button>
+                      </li>
+                    );
+                  })}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <NutritionFacts item={state} />
+
+        {isAvailable ? (
+          <div className="mt-product__buy">
+            {quantity > 0 ? (
+              <span className="mt-stepper mt-stepper--lg">
+                <button type="button" onClick={() => setQuantity(quantity - 1)} aria-label="إنقاص">
+                  −
+                </button>
+                <b>{quantity}</b>
+                <button type="button" onClick={() => setQuantity(quantity + 1)} aria-label="زيادة">
+                  +
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="mt-btn mt-btn--primary mt-product__add"
+                onClick={() => setQuantity(1)}
+              >
+                {getText(10) || "أضف إلى السلة"}
+              </button>
+            )}
+
+            <span className="mt-product__total">
+              <em>الإجمالي</em>
+              <b className="mt-price">
+                {lineTotal.toFixed(2)} <small>ر.س</small>
+              </b>
+            </span>
+
+            {quantity > 0 && (
+              <Link to="/cart" className="mt-btn mt-btn--dark">
+                إتمام الطلب
+              </Link>
+            )}
+          </div>
+        ) : (
+          <p className="mt-product__unavailable">{status}</p>
+        )}
+
+        <p className="mt-product__toast" data-show={justAdded} role="status">
+          {getText(2) || "تمت الإضافة إلى السلة"}
+        </p>
+      </div>
     </section>
   );
 }
 
-function NutritionsFacts({ item }) {
-  const pills = Nutriants.map((keyName) => {
-    if (!item[keyName]) return null;
-    const target = nutrationInfo[keyName];
+function NutritionFacts({ item }) {
+  const pills = nutrients
+    .filter((k) => !!item[k])
+    .map((keyName) => {
+      const target = nutritionInfo[keyName];
+      return (
+        <li key={keyName}>
+          {target.icon} {item[keyName]} {target[isArabic ? "ar" : "en"]}
+        </li>
+      );
+    });
 
-    return (
-      <li
-        key={keyName}
-        className="align-items-center d-flex px-3 py-1"
-        style={{
-          background: "aliceblue",
-          color: "var(--primary)",
-          borderRadius: "20px",
-          border: "1px solid #ddd",
-        }}
-      >
-        {target.icon} {item[keyName]} {target[isArabic ? "ar" : "en"]}
-      </li>
-    );
-  });
+  if (!pills.length) return null;
 
   return (
-    <div id="nutration-info" className="active">
-      <label
-        className="d-flex align-items-center gap-2 h6 mb-3"
-        style={{ color: "var(--primary)", cursor: "pointer" }}
-      >
-        <input type="checkbox" hidden={true} onChange={toggleNlist} />
-        الحقائق التغذوية
-        {Arrow_Down}
-      </label>
-
-      <ul
-        ref={declareHeight}
-        className="d-flex flex-wrap gap-2 small list-unstyled m-0 p-0"
-      >
-        {pills}
-      </ul>
-    </div>
+    <details className="mt-product__nutrition">
+      <summary>الحقائق التغذوية</summary>
+      <ul>{pills}</ul>
+    </details>
   );
-
-  function toggleNlist() {
-    document.getElementById("nutration-info").classList.toggle("active");
-  }
-
-  function declareHeight(el) {
-    if (el) {
-      el.style.setProperty("--h", el.scrollHeight + "px");
-    }
-  }
 }
 
-function initStateStyle(isAvailable) {
-  const result = {
-    backgroundColor: "rgb(91 156 100 / 8%)",
-    color: "rgb(91, 156, 100)",
-    fontWeight: "bolder",
-  };
+function Related({ items, exclude, categoryID }) {
+  const related = items
+    .filter((i) => i.item_category_id === categoryID && i.id !== exclude)
+    .slice(0, 8);
 
-  if (!isAvailable) {
-    result.backgroundColor = "#dc35452b";
-    result.color = "var(--bs-danger)";
-  }
+  if (!related.length) return null;
 
-  return result;
+  return (
+    <section>
+      <div className="mt-section-head">
+        <h2>{getText(11)}</h2>
+        <Link to="/all-products">عرض الكل</Link>
+      </div>
+      <div className="mt-grid">
+        {related.map((item) => (
+          <ProductCard key={item.id} item={item} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function setDocumentMeta(state, productName) {
+  document.title =
+    state.meta_title || (isArabic ? "مونتانا" : "Montana") + " — " + productName;
+
+  const tag = document.querySelector('meta[name="description"]');
+  if (tag && state.meta_description) tag.setAttribute("content", state.meta_description);
 }
 
 export function checkStatus(item, settings) {
