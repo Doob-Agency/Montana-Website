@@ -9,6 +9,13 @@
   &__results {
     min-width: 0;
   }
+
+  /* Both tracks need this: a grid child defaults to min-width:auto, so the
+     no-wrap chip row inside the filter panel sized the whole column to its
+     content and pushed the page sideways instead of scrolling. */
+  > * {
+    min-width: 0;
+  }
 }
 
 @media (max-width: 900px) {
@@ -74,6 +81,7 @@
     overflow-x: auto;
     scrollbar-width: thin;
     padding-bottom: var(--mt-1);
+    min-width: 0;
 
     > * {
       flex: none;

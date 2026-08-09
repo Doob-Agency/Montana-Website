@@ -369,6 +369,11 @@ body > header {
   z-index: 40;
   visibility: hidden;
   pointer-events: none;
+  /* The closed panel is parked one width off-screen. Without clipping it here,
+     a fixed element sitting outside the viewport still counts toward the
+     document's scroll width — which gave every page a sideways scrollbar on
+     phones. */
+  overflow: hidden;
 
   &.is-open {
     visibility: visible;
