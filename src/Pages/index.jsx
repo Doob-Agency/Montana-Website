@@ -128,6 +128,11 @@ function App() {
       .then((r) => {
         pageTitles = r;
         setTitlesLoaded(true);
+      })
+      // Page titles are a nicety. Losing them must not stop the site booting.
+      .catch(() => {
+        pageTitles = { configs: [] };
+        setTitlesLoaded(true);
       });
 
   useEffect(() => {
@@ -135,6 +140,9 @@ function App() {
     body.style.overflowY = showPopup ? "hidden" : "visible";
   }, [location]);
 
+  // Settings gate the whole app, so a failed request used to leave a blank page
+  // with nothing on it — no header, no footer, no explanation.
+  if (appSettings.failed) return <Unreachable />;
   if (titlesLoaded === false) return null;
   if (!appSettings.loaded) return null;
 
@@ -197,6 +205,34 @@ function App() {
       {createPortal(Nav(isMobileView), nav)}
       {createPortal(Footer(), footer)}
     </>
+  );
+}
+
+/** Shown when the dashboard cannot be reached at all. */
+function Unreachable() {
+  return (
+    <div className="mt-page">
+      <div className="mt-empty" style={{ marginBlock: "var(--mt-7)" }}>
+        <img
+          src={process.env.PUBLIC_URL + "/assets/home/logo.svg"}
+          alt="حلويات مونتانا"
+          width="140"
+          height="53"
+        />
+        <h2>تعذّر الاتصال بالخادم</h2>
+        <p>
+          لم نتمكّن من تحميل بيانات المتجر. تأكد من اتصالك بالإنترنت ثم أعد
+          المحاولة — سلتك محفوظة ولن تفقد شيئاً.
+        </p>
+        <button
+          type="button"
+          className="mt-btn mt-btn--primary"
+          onClick={() => window.location.reload()}
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    </div>
   );
 }
 

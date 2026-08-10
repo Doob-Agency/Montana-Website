@@ -42,14 +42,44 @@ function cartValidation(store) {
   };
 }
 
-fetch(process.env.REACT_APP_API_URL + "/public/api/getItemcategories")
-  .then((r) => r.json())
-  .then((r) => {
+/**
+ * Every call to the dashboard goes through here.
+ *
+ * These requests used to be bare `fetch().then().then(dispatch)` chains with no
+ * catch, so a dropped connection, a blocked request or an HTML error page threw
+ * an unhandled rejection — which in development covers the whole site with the
+ * red overlay, and in production silently leaves that slice of state empty with
+ * no clue why. Nothing here can reject: on failure it resolves to null, the
+ * caller skips its dispatch, and the reason is logged once.
+ */
+export function apiFetch(url, options) {
+  return fetch(url, options)
+    .then((res) => {
+      if (!res.ok) {
+        console.warn(`[api] ${res.status} ${res.statusText} — ${url}`);
+        return null;
+      }
+      // A session that has expired often answers with an HTML login page, and
+      // res.json() on HTML throws "Unexpected token '<'".
+      return res.json().catch(() => {
+        console.warn(`[api] response was not JSON — ${url}`);
+        return null;
+      });
+    })
+    .catch((err) => {
+      console.warn(`[api] request failed — ${url}`, err.message);
+      return null;
+    });
+}
+
+apiFetch(process.env.REACT_APP_API_URL + "/public/api/getItemcategories").then(
+  (r) =>
+    r &&
     APP_STATE.dispatch({
       type: "products/initMiniCategories",
       payload: r,
-    });
-  });
+    }),
+);
 
 navigator.geolocation.getCurrentPosition((POS) => {
   if (!("geolocation" in navigator))
@@ -76,42 +106,37 @@ const baseUrl = process.env.REACT_APP_API_URL + "/public/api",
     },
   };
 
-fetch(baseUrl + "/get-settings", {
-  method: "POST",
-})
-  .then((r) => r.json())
-  .then((r) => {
-    APP_STATE.dispatch({ type: "settings/init", payload: r });
-  });
+apiFetch(baseUrl + "/get-settings", { method: "POST" }).then((r) =>
+  APP_STATE.dispatch(
+    Array.isArray(r)
+      ? { type: "settings/init", payload: r }
+      : { type: "settings/failed" },
+  ),
+);
 
-fetch(baseUrl + "/get-all-restaurant", fetchOpts)
-  .then((res) => res.json())
-  .then((data) =>
-    APP_STATE.dispatch({
-      type: "restaurant/INIT_BRANCHES",
-      payload: data,
-    })
-  );
+apiFetch(baseUrl + "/get-all-restaurant", fetchOpts).then(
+  (data) =>
+    data && APP_STATE.dispatch({ type: "restaurant/INIT_BRANCHES", payload: data }),
+);
 
-fetch(baseUrl + "/getSliders")
-  .then((r) => r.json())
-  .then((r) => APP_STATE.dispatch({ type: "sliders/init", payload: r }));
+apiFetch(baseUrl + "/getSliders").then(
+  (r) => r && APP_STATE.dispatch({ type: "sliders/init", payload: r }),
+);
 
-fetch(baseUrl + "/getPaymentGateways")
-  .then((r) => r.json())
-  .then((r) => APP_STATE.dispatch({ type: "gateways/init", payload: r }))
-  .catch(() => APP_STATE.dispatch({ type: "gateways/init", payload: [] }));
+apiFetch(baseUrl + "/getPaymentGateways").then((r) =>
+  APP_STATE.dispatch({ type: "gateways/init", payload: r || [] }),
+);
 
 const savedSlug = window.localStorage.getItem("slug");
 
 export const updateUserInfo = function () {
-    fetch(baseUrl + "/update-user-info", fetchOpts)
-      .then(toJson)
-      .then((r) => {
-        APP_STATE.dispatch({ type: "user/init", payload: r.data });
-        getFavourites();
-        getUserAlerts();
-      });
+    apiFetch(baseUrl + "/update-user-info", fetchOpts).then((r) => {
+      // A dead session answers without a data object; reading r.data off null
+      // used to throw and take the page down on load.
+      if (r && r.data) APP_STATE.dispatch({ type: "user/init", payload: r.data });
+      getFavourites();
+      getUserAlerts();
+    });
   },
   logout = function () {
     APP_STATE.dispatch({ type: "products/clearCart" });
@@ -120,62 +145,52 @@ export const updateUserInfo = function () {
   getFavourites = function () {
     if (fetchOpts.headers.Authorization === undefined) return;
 
-    fetch(baseUrl + "/get-favorite-items", fetchOpts)
-      .then(toJson)
-      .then((res) =>
-        APP_STATE.dispatch({
-          type: "products/initFavourites",
-          payload: res,
-        })
-      );
+    apiFetch(baseUrl + "/get-favorite-items", fetchOpts).then(
+      (res) =>
+        Array.isArray(res) &&
+        APP_STATE.dispatch({ type: "products/initFavourites", payload: res }),
+    );
   },
   getUserAlerts = function () {
-    fetch(baseUrl + "/get-user-notifications", fetchOpts)
-      .then(toJson)
-      .then(
-        (r) =>
-          r.length && APP_STATE.dispatch({ type: "user/setAlerts", payload: r })
-      )
-      .catch(console.error);
+    apiFetch(baseUrl + "/get-user-notifications", fetchOpts).then(
+      (r) =>
+        r &&
+        r.length &&
+        APP_STATE.dispatch({ type: "user/setAlerts", payload: r }),
+    );
 
-    fetch(baseUrl + "/get-addresses", fetchOpts)
-      .then(toJson)
-      .then((r) => {
-        APP_STATE.dispatch({ type: "user/setAddresses", payload: r });
-        APP_STATE.dispatch({ type: "user/setActiveAddress" });
-      })
-      .catch(console.error);
+    apiFetch(baseUrl + "/get-addresses", fetchOpts).then((r) => {
+      if (!r) return;
+      APP_STATE.dispatch({ type: "user/setAddresses", payload: r });
+      APP_STATE.dispatch({ type: "user/setActiveAddress" });
+    });
 
-    fetch(baseUrl + "/cash-back", fetchOpts)
-      .then((r) => r.json())
-      .then((res) => {
-        const cashback = res.data.find((c) => c.title === "cart");
-        if (!cashback) return;
+    apiFetch(baseUrl + "/cash-back", fetchOpts).then((res) => {
+      const rows = res && res.data;
+      if (!Array.isArray(rows)) return;
+
+      const cashback = rows.find((c) => c.title === "cart");
+      cashback &&
         cashback.is_active &&
-          APP_STATE.dispatch({
-            type: "products/setCashback",
-            payload: cashback,
-          });
-      })
-      .catch(console.error);
+        APP_STATE.dispatch({ type: "products/setCashback", payload: cashback });
+    });
 
-    fetch(baseUrl + "/get-orders", fetchOpts)
-      .then((r) => r.json())
-      .then((r) =>
-        APP_STATE.dispatch({ type: "user/setPrevOrders", payload: r })
-      );
+    apiFetch(baseUrl + "/get-orders", fetchOpts).then(
+      (r) =>
+        r && APP_STATE.dispatch({ type: "user/setPrevOrders", payload: r }),
+    );
   };
-
-function toJson(res) {
-  return res.json();
-}
 
 if (window.localStorage.getItem("token")) updateUserInfo();
 
 if (savedSlug) {
-  fetch(baseUrl + "/get-restaurant-info/" + savedSlug, fetchOpts)
-    .then(toJson)
-    .then((resData) => {
+  apiFetch(baseUrl + "/get-restaurant-info/" + savedSlug, fetchOpts).then(
+    (resData) => {
+      // A failed request is not proof the branch is gone. Reloading on a null
+      // response would have looped the page on any network blip, because the
+      // reload issues the same request again.
+      if (!resData) return;
+
       if (!resData.is_active) {
         window.localStorage.removeItem("slug");
         window.location.reload();
@@ -184,13 +199,10 @@ if (savedSlug) {
 
       APP_STATE.dispatch({ type: "restaurant/init", payload: resData });
 
-      fetch(baseUrl + "/get-restaurant-items/" + savedSlug, fetchOpts)
-        .then(toJson)
-        .then((data) =>
-          APP_STATE.dispatch({
-            type: "products/init",
-            payload: data,
-          })
-        );
-    });
+      apiFetch(baseUrl + "/get-restaurant-items/" + savedSlug, fetchOpts).then(
+        (data) =>
+          data && APP_STATE.dispatch({ type: "products/init", payload: data }),
+      );
+    },
+  );
 }
