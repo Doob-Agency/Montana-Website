@@ -1,13 +1,13 @@
-# Client-side routing for the redesigned storefront.
+﻿# Client-side routing for the redesigned storefront.
 #
-# The build is deployed into /new on montana.doobagency.com, next to the old
+# The build is deployed into /new2 on montana.doobagency.com, next to the old
 # site at the domain root and the dashboard at /admin. Apache must hand every
-# unknown path under /new back to this folder's index.html so React Router can
+# unknown path under /new2 back to this folder's index.html so React Router can
 # resolve it, without touching the two neighbours.
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /new/
+  RewriteBase /new2/
 
   # Real files and folders are served as-is.
   RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -15,7 +15,7 @@
   RewriteRule ^ - [L]
 
   # Everything else is a React route.
-  RewriteRule . /new/index.html [L]
+  RewriteRule . /new2/index.html [L]
 </IfModule>
 
 # index.html must never be cached: it carries the hashed bundle names, so a
@@ -34,3 +34,4 @@
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
 </IfModule>
+
