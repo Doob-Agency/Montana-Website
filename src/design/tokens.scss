@@ -50,7 +50,10 @@
   --mt-5: 24px;
   --mt-6: 32px;
   --mt-7: 48px;
-  --mt-band: clamp(20px, 3.4vw, 38px);
+  /* Vertical padding on a section, so the gap between two of them is twice
+     this. At 38px the shelves sat 76px apart — fine when each was 924px tall,
+     far too airy once they became 461px. */
+  --mt-band: clamp(18px, 2.4vw, 26px);
 
   /* ---- Motion ----------------------------------------------------------- */
   --mt-ease: 160ms ease-out;

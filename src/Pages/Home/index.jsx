@@ -273,7 +273,7 @@ function ProductShelf({ id, title, pick, href }) {
         <Link to={href}>عرض الكل</Link>
       </div>
 
-      <div className="mt-grid">
+      <div className="mt-shelf">
         {items.map((item) => (
           <ProductCard key={item.id} item={item} />
         ))}
@@ -292,7 +292,7 @@ function ShelfSkeleton({ title }) {
       <div className="mt-section-head">
         <h2>{title}</h2>
       </div>
-      <div className="mt-grid" aria-hidden="true">
+      <div className="mt-shelf" aria-hidden="true">
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="mt-card">
             <div className="mt-card__media mt-skeleton" />

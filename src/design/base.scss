@@ -16,13 +16,21 @@ main {
   color: var(--mt-ink);
 }
 
+/**
+ * Weight only — never colour.
+ *
+ * Setting `color` here beat the white that dark panels set on themselves,
+ * because a rule on the heading always wins over a colour inherited from an
+ * ancestor. That painted the headings of the navy service cards and the wallet
+ * band navy-on-navy, effectively invisible. Headings inherit from `main` above,
+ * so they follow whatever surface they sit on.
+ */
 main h1,
 main h2,
 main h3,
 main h4,
 main h5,
 main h6 {
-  color: var(--mt-ink);
   font-weight: 700;
 }
 

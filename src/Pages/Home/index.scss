@@ -184,9 +184,8 @@
 /* --- product grid ------------------------------------------------------- */
 
 /**
- * 240px keeps this at four columns on a full-width desktop, so a shelf of eight
- * fills two rows exactly. At 190px it fitted five and left a single card
- * stranded on a row of its own.
+ * A grid, for pages that show a complete set: the catalogue, favourites,
+ * related items. 240px keeps it at four columns on a full desktop.
  */
 .mt-grid {
   display: grid;
@@ -211,6 +210,57 @@
   }
 }
 
+/**
+ * A shelf, for the homepage. The homepage shows a *selection*, and a selection
+ * rarely divides evenly into the column count — six items in four columns left
+ * two empty cells and a large blank rectangle where the row should have ended.
+ * Scrolling sideways has no such remainder, keeps the page shorter, and is what
+ * "الرفّ" describes in the first place.
+ */
+.mt-shelf {
+  --shelf-gap: var(--mt-4);
+  /* Fractional on purpose: the sliver of the next card is what tells anyone the
+     row scrolls. At a whole 4 the two remaining products were invisible with no
+     affordance at all. */
+  --shelf-per-view: 4.2;
+
+  display: grid;
+  grid-auto-flow: column;
+  /* A fraction of the container, not 1fr: inside a scroller 1fr resolves to the
+     visible width and squeezes every card in rather than letting them run off
+     the edge. This shows exactly `--shelf-per-view` and scrolls for the rest. */
+  grid-auto-columns: calc(
+    (100% - (var(--shelf-per-view) - 1) * var(--shelf-gap)) /
+      var(--shelf-per-view)
+  );
+  gap: var(--shelf-gap);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  /* Room for the card's hover shadow, which a scroll container would clip. */
+  padding: 4px 4px var(--mt-2);
+  margin: -4px -4px 0;
+
+  > * {
+    scroll-snap-align: start;
+  }
+
+  @media (max-width: 1100px) {
+    --shelf-per-view: 3.2;
+  }
+
+  @media (max-width: 820px) {
+    --shelf-per-view: 2.3;
+  }
+
+  /* A fractional count on phones leaves the next card peeking, which is what
+     tells someone the row scrolls at all. */
+  @media (max-width: 620px) {
+    --shelf-gap: var(--mt-3);
+    --shelf-per-view: 2.15;
+  }
+}
+
 .mt-card {
   display: flex;
   flex-direction: column;
@@ -218,26 +268,50 @@
   border: 1px solid var(--mt-line);
   border-radius: var(--mt-r-md);
   overflow: hidden;
-  transition: box-shadow var(--mt-ease);
+  transition: box-shadow var(--mt-ease), border-color var(--mt-ease);
 
   &:hover {
     box-shadow: var(--mt-shadow-2);
+    border-color: #cddbe6;
   }
 
-  &--off {
-    opacity: 0.72;
+  /* Sold out is said in words on the flag; fading the whole card as well made
+     the photo muddy and the price hard to read. */
+  &--off .mt-card__media img {
+    filter: grayscale(0.45);
+    opacity: 0.85;
   }
 
   &__media {
     position: relative;
     display: block;
-    aspect-ratio: 4 / 3;
+    /* The catalogue photographs are square (1000×1000). Any other ratio crops
+       them: 4/3 took a quarter off and lost the cake bases, 5/4 sliced the
+       graduation caps off the top. A square box shows the product whole, which
+       for a cake shop matters more than trimming the white margin the shots
+       come with. */
+    aspect-ratio: 1;
     background: var(--mt-navy-soft);
+    overflow: hidden;
+    /* A flex item shrinks by default, so on a card whose text ran taller — a
+       sold-out one, which has no add button and so a taller body — the photo
+       box gave up 67px and the row lost its alignment. */
+    flex: none;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 300ms ease-out;
+    }
+
+    /* The product shots carry a wide white margin of their own, which against a
+       white card reads as an empty tile. A slight crop on hover brings the cake
+       forward without touching the source images. */
+    @media (hover: hover) {
+      &:hover img {
+        transform: scale(1.06);
+      }
     }
 
     /* Set by ProductCard when the catalogue image 404s — a cake glyph reads as
@@ -267,8 +341,8 @@
   &__body {
     display: flex;
     flex-direction: column;
-    gap: var(--mt-1);
-    padding: var(--mt-3);
+    gap: 2px;
+    padding: var(--mt-3) var(--mt-3) var(--mt-3);
     flex: 1;
   }
 
@@ -277,12 +351,14 @@
     font-weight: 700;
     color: var(--mt-ink);
     text-decoration: none;
-    line-height: 1.4;
+    line-height: 1.45;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.5em;
+    /* Two lines' worth, so names of different lengths still line their prices
+       up across a row — but no more, or a one-line name leaves a gap. */
+    min-height: 2.9em;
   }
 
   &__meta {
@@ -297,7 +373,7 @@
     justify-content: space-between;
     gap: var(--mt-2);
     margin-top: auto;
-    padding-top: var(--mt-2);
+    padding-top: var(--mt-3);
   }
 
   &__add {
